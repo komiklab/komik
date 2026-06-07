@@ -1,3 +1,10 @@
+import { RouteGuard } from "../providers/RouteGuard";
+
 export default function HomePage() {
-  return <div>Home page</div>;
+
+  return (
+    <RouteGuard>
+      <div>Homepage</div>
+    </RouteGuard>
+  );
 }

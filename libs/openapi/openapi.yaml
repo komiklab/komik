@@ -1,0 +1,79 @@
+openapi: "3.0.3"
+info:
+  title: API Contracts for Komik
+  version: "1.0"
+servers:
+  - url: https://api.server.test/v1
+tags:
+  - name: admin
+
+paths:
+  /admin:
+    get:
+      tags:
+        - admin
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/adminGetResponse"
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+    post:
+      tags:
+        - admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/adminCreateRequest"
+      responses:
+        "201":
+          description: Created
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+
+components:
+  schemas:
+    errorResponse:
+      type: object
+      properties:
+        error_code:
+          type: string
+        error_message:
+          type: string
+    adminGetResponse:
+      type: object
+      required:
+        - exists
+      properties:
+        exists:
+          type: boolean
+    adminCreateRequest:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+          format: password

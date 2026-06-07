@@ -1,0 +1,8 @@
+package: apidefn
+generate:
+  echo5-server: true
+  models: true
+  embedded-spec: true
+output-options:
+  nullable-type: true
+output: ./generated.go

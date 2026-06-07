@@ -1,40 +1,27 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAdminStore } from "../stores/admin";
+import { useGetAdmin } from "../api/komik";
 
 export function RouteGuard({ children }: { children: React.ReactNode }) {
-    const { doesAdminExist, checkIfAdminExists, error } = useAdminStore();
-    const [loading, setLoading] = useState(true);
+    const { data, isLoading, isError } = useGetAdmin();
     const router = useRouter();
 
     useEffect(() => {
-        let mounted = true;
+        if (isLoading) return;
 
-        checkIfAdminExists().finally(() => {
-            if (mounted) {
-                setLoading(false);
-            }
-        });
-
-        return () => {
-            mounted = false;
-        };
-    }, [checkIfAdminExists]);
-
-    useEffect(() => {
-        if (!loading && error) {
-            console.log(error)
-            router.replace("/error")
-            return
+        if (isError) {
+            router.replace("/error");
+            return;
         }
-        if (!loading && !doesAdminExist) {
+
+        if (data?.status === 200 && !data.data.exists) {
             router.replace("/bootstrap");
         }
-    }, [doesAdminExist, loading, router, error]);
+    }, [data, isLoading, isError, router]);
 
-    if (loading || !doesAdminExist) {
+    if (isLoading || (data?.status === 200 && !data.data.exists)) {
         return <div>Loading...</div>;
     }
 

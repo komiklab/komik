@@ -24,7 +24,7 @@ func main() {
 	log.Logger = log.With().Caller().Logger()
 	//postgres := client.NewPostgresClient(cfg)
 	contrlr := controller.NewController(cfg)
-	httpComponent := component.NewHttpComponent()
+	httpComponent := component.NewHttpComponent(cfg)
 	contrlr.AddComponent(httpComponent)
 	contrlr.Init()
 	contrlr.Start()

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/komiklab/komik/apidefn"
+	"github.com/komiklab/komik/internal"
 	httphandler "github.com/komiklab/komik/internal/handler/http_handler"
 	"github.com/labstack/echo/v5"
 	"github.com/labstack/echo/v5/middleware"
@@ -15,6 +16,7 @@ import (
 type HttpComponent struct {
 	e *echo.Echo
 	s *http.Server
+	cfg *internal.Config
 }
 
 var _ Component = (*HttpComponent)(nil)
@@ -56,8 +58,10 @@ func (h *HttpComponent) Stop(ctx context.Context) {
 	}
 }
 
-func NewHttpComponent() *HttpComponent {
-	return &HttpComponent{}
+func NewHttpComponent(cfg *internal.Config) *HttpComponent {
+	return &HttpComponent{
+		cfg: cfg,
+	}
 }
 
 func (h *HttpComponent) addMiddleware() {

@@ -6,6 +6,7 @@ import {
   mantineHtmlProps,
 } from "@mantine/core";
 import { theme } from "../theme";
+import { Providers } from "../providers/Providers";
 
 export const metadata = {
   title: "komik",
@@ -24,7 +25,9 @@ export default function RootLayout({ children }: { children: any }) {
         />
       </head>
       <body>
-        <MantineProvider theme={theme} defaultColorScheme="dark">{children}</MantineProvider>
+        <MantineProvider theme={theme} defaultColorScheme="dark">
+          <Providers>{children}</Providers>
+        </MantineProvider>
       </body>
     </html>
   );

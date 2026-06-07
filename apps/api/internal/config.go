@@ -6,7 +6,9 @@ import (
 )
 
 type Config struct {
-	IsDebugLoggerConfig bool `env:"IS_DEBUG_LOGGER_CONFIG" envDefault:"true"`
+	IsDebugLoggerConfig bool   `env:"IS_DEBUG_LOGGER_CONFIG" envDefault:"true"`
+	PostgresDSN         string `env:"POSTGRES_DSN" envDefault:"postgres://komik:komik@localhost:5433/komik?sslmode=disable"`
+	CORSSupport         string `env:"CORS_SUPPORT" envDefault:"http://localhost:3000"`
 }
 
 func NewConfig() *Config {

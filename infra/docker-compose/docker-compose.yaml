@@ -8,7 +8,7 @@ services:
       POSTGRES_PASSWORD: komik
       POSTGRES_DB: komik
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - komikdb_data:/var/lib/postgresql/data
       - ./init_db.sh:/docker-entrypoint-initdb.d/init_db.sh

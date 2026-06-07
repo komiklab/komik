@@ -7,6 +7,7 @@ import (
 
 	"github.com/komiklab/komik/apidefn"
 	"github.com/komiklab/komik/internal"
+	"github.com/komiklab/komik/internal/client"
 	httphandler "github.com/komiklab/komik/internal/handler/http_handler"
 	"github.com/labstack/echo/v5"
 	"github.com/labstack/echo/v5/middleware"
@@ -14,9 +15,10 @@ import (
 )
 
 type HttpComponent struct {
-	e *echo.Echo
-	s *http.Server
-	cfg *internal.Config
+	e        *echo.Echo
+	s        *http.Server
+	cfg      *internal.Config
+	dbclient client.Client
 }
 
 var _ Component = (*HttpComponent)(nil)
@@ -28,7 +30,7 @@ func (h *HttpComponent) GetName() string {
 func (h *HttpComponent) Init() {
 	h.e = echo.New()
 	h.addMiddleware()
-	handler := httphandler.NewHttpHandler()
+	handler := httphandler.NewHttpHandler(h.cfg, h.dbclient)
 	apidefn.RegisterHandlersWithOptions(h.e, handler, apidefn.RegisterHandlersOptions{
 		BaseURL:              "/api/v1",
 		OperationMiddlewares: map[string][]echo.MiddlewareFunc{},
@@ -51,6 +53,7 @@ func (h *HttpComponent) Start() {
 }
 
 func (h *HttpComponent) Stop(ctx context.Context) {
+	defer h.dbclient.Close()
 	if h.s != nil {
 		if err := h.s.Shutdown(ctx); err != nil {
 			log.Error().Err(err).Msg("HTTP server failed to shutdown")
@@ -58,9 +61,10 @@ func (h *HttpComponent) Stop(ctx context.Context) {
 	}
 }
 
-func NewHttpComponent(cfg *internal.Config) *HttpComponent {
+func NewHttpComponent(cfg *internal.Config, dbclient client.Client) *HttpComponent {
 	return &HttpComponent{
-		cfg: cfg,
+		cfg:      cfg,
+		dbclient: dbclient,
 	}
 }
 
@@ -68,7 +72,7 @@ func (h *HttpComponent) addMiddleware() {
 	h.e.Use(middleware.Recover())
 	h.e.Use(middleware.RequestID())
 	h.e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins:     []string{"http://example.com"},
+		AllowOrigins:     []string{h.cfg.CORSSupport},
 		AllowHeaders:     []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
 		AllowCredentials: true,
 	}))

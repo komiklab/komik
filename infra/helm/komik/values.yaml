@@ -83,18 +83,18 @@ httpRoute:
   annotations: {}
   # Which Gateways this Route is attached to.
   parentRefs:
-  - name: gateway
-    sectionName: http
-    # namespace: default
+    - name: gateway
+      sectionName: http
+      # namespace: default
   # Hostnames matching HTTP header.
   hostnames:
-  - chart-example.local
+    - chart-example.local
   # List of rules and filters applied.
   rules:
-  - matches:
-    - path:
-        type: PathPrefix
-        value: /headers
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /headers
   #   filters:
   #   - type: RequestHeaderModifier
   #     requestHeaderModifier:
@@ -159,3 +159,81 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+##### Dependencies ############
+postgresql:
+  enabled: true
+  image:
+    registry: docker.io
+    repository: bitnamilegacy/postgresql
+    tag: 17.6.0-debian-12-r4
+  architecture: standalone
+  auth:
+    username: komik
+    password: komik
+    database: komik
+  primary:
+    initdb:
+      scripts:
+        init_database.sql: |
+          -- initialize postgresql
+          CREATE EXTENSION IF NOT EXIST "uuid-ossp";
+
+nats:
+  enabled: true
+  config:
+    jetstream:
+      enabled: true
+      fileStore:
+        enabled: true
+        dir: /data/jetstream
+        pvc:
+          enabled: true
+          size: 1Gi
+    websocket:
+      enabled: true
+      port: 9222
+      noTls: true
+  extraResources:
+    - apiVersion: batch/v1
+      kind: Job
+      metadata:
+        name: nats-stream-init
+        annotations:
+          "helm.sh/hook": post-install,post-upgrade
+          "helm.sh/hook-weight": "5"
+          "helm.sh/hook-delete-policy": before-hook-creation
+      spec:
+        ttlSecondsAfterFinished: 120
+        template:
+          spec:
+            restartPolicy: OnFailure
+            initContainers:
+              # Wait until NATS is ready before running the stream creation
+              - name: wait-for-nats
+                image: natsio/nats-box:latest
+                command:
+                  - sh
+                  - -c
+                  - |
+                    until nats -s nats://komik-nats:4222 rtt 2>/dev/null; do
+                      echo "Waiting for NATS..."; sleep 2;
+                    done
+            containers:
+              - name: stream-init
+                image: natsio/nats-box:latest
+                command:
+                  - sh
+                  - -c
+                  - |
+                    # Create stream if it doesn't already exist
+                    nats -s nats://komik-nats:4222 stream info komik-stream 2>/dev/null || \
+                    nats -s nats://komik-nats:4222 stream add komik-stream \
+                      --subjects "komik.>" \
+                      --storage file \
+                      --replicas 1 \
+                      --max-age 24h \
+                      --retention limits \
+                      --discard old \
+                      --dupe-window 2m \
+                      --defaults

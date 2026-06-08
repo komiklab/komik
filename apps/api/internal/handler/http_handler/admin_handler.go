@@ -1,13 +1,20 @@
 package httphandler
 
 import (
+	"github.com/komiklab/komik/apidefn"
 	"github.com/komiklab/komik/internal/auth"
+	"github.com/komiklab/komik/internal/models"
 	"github.com/labstack/echo/v5"
 )
 
 // GetAdmin implements [apidefn.ServerInterface].
 func (h *HttpHandler) GetAdmin(ctx *echo.Context) error {
-	auth := auth.NewAuthService()
+
+	// if csrfToken, ok := (*ctx).Get("csrf").(string); ok {
+	// 	(*ctx).Response().Header().Set("X-CSRF-Token", csrfToken)
+	// }
+
+	auth := auth.NewAuthService(h.dbclient)
 	exists, err := auth.DoesAdminExist()
 	if err != nil {
 		return ctx.JSON(500, map[string]interface{}{
@@ -26,5 +33,24 @@ func (h *HttpHandler) GetAdmin(ctx *echo.Context) error {
 
 // PostAdmin implements [apidefn.ServerInterface].
 func (h *HttpHandler) PostAdmin(ctx *echo.Context) error {
-	panic("unimplemented")
+	var req apidefn.AdminCreateRequest
+	if err := ctx.Bind(&req); err != nil {
+		return ctx.JSON(400, map[string]interface{}{
+			"error": err.Error(),
+		})
+	}
+	if err := ctx.Validate(req); err != nil {
+		return ctx.JSON(400, map[string]interface{}{
+			"error": err.Error(),
+		})
+	}
+	auth := auth.NewAuthService(h.dbclient)
+	if err := auth.CreateAdmin(&models.Admin{Username: req.Username, Password: req.Password}); err != nil {
+		return ctx.JSON(500, map[string]interface{}{
+			"error": err.Error(),
+		})
+	}
+	return ctx.JSON(201, map[string]interface{}{
+		"message": "Admin created successfully",
+	})
 }

@@ -1,64 +1,62 @@
 "use client";
-import {
-  TextInput,
-  PasswordInput,
-  Button,
-  Paper,
-  Title,
-  Container,
-} from "@mantine/core";
-import { useForm } from "@mantine/form";
-import { useAdminStore } from "../../stores/admin";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import AdminForm from "../../components/form/adminForm";
+import type { AdminFormValues } from "../../components/form/adminForm";
+import { useGetAdmin, usePostAdmin } from "../../api/komik";
 
 export default function Bootstrap() {
   const router = useRouter();
-  // function createAdminCred() {
-  //   console.log("creating admin cred");
-  //   useAdminStore.setState({ doesAdminExist: true });
-  //   router.replace("/signin");
-  // }
-  return <AdminForm />;
-  // const form = useForm({
-  //   mode: 'uncontrolled',
-  //   initialValues: {
-  //     email: '',
-  //     password: '',
-  //   },
-  //   validate: {
-  //     email: (value) => (/^\S+@\S+$/.test(value) ? null : 'Invalid email'),
-  //     password: (value) => (value.length < 6 ? 'Password must be at least 6 characters' : null),
-  //   },
-  // });
+  const {
+    data: adminData,
+    isLoading: isCheckingAdmin,
+    isError: isAdminCheckError,
+    error
+  } = useGetAdmin();
+  const {
+    mutate: createAdmin,
+    isPending: isCreatingAdmin,
+  } = usePostAdmin({
+    mutation: {
+      onSuccess: () => {
+        router.replace("/signin");
+      },
+      onError: (error: any) => {
+        console.log("Error creating admin", error);
+        router.replace("/error");
+      },
+    },
+  });
 
-  // return (
-  //   <Container size={420} my={40}>
-  //     <Title ta="center" order={2}>
-  //       Create Administrator
-  //     </Title>
-  //     <Paper withBorder shadow="md" p={30} mt={30} radius="md">
-  //       <form onSubmit={form.onSubmit((values) => console.log(values))}>
-  //         <TextInput
-  //           label="Email"
-  //           placeholder="you@mantine.dev"
-  //           key={form.key('email')}
-  //           {...form.getInputProps('email')}
-  //           required
-  //         />
-  //         <PasswordInput
-  //           label="Password"
-  //           placeholder="Your password"
-  //           mt="md"
-  //           key={form.key('password')}
-  //           {...form.getInputProps('password')}
-  //           required
-  //         />
-  //         <Button fullWidth mt="xl" type="submit" onClick={createAdminCred}>
-  //           Create
-  //         </Button>
-  //       </form>
-  //     </Paper>
-  //   </Container>
-  // );
+  useEffect(() => {
+    if (isAdminCheckError) {
+      router.replace("/error");
+      return;
+    }
+
+    if (!isCheckingAdmin && adminData?.status === 200 && adminData.data.exists) {
+      router.replace("/signin");
+    }
+  }, [adminData, isAdminCheckError, isCheckingAdmin, router]);
+
+  if (!isCheckingAdmin && adminData?.status === 200 && adminData.data.exists) {
+    return null;
+  }
+  if (isCheckingAdmin) {
+    return <div>checking</div>;
+  }
+  function createAdminCred(values: AdminFormValues) {
+    createAdmin({
+      data: {
+        username: values.email,
+        password: values.password,
+      },
+    });
+  }
+  return (
+    <AdminForm
+      submitLabel={isCreatingAdmin ? "Creating..." : "Create"}
+      onSubmit={(values: AdminFormValues) => createAdminCred(values)}
+    />
+  );
 }

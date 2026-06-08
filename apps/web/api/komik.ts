@@ -29,6 +29,11 @@ import type {
   ErrorResponse
 } from './schemas';
 
+import { customInstance } from './httpClient';
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
+
+
 export type getAdminResponse200 = {
   data: AdminGetResponse
   status: 200
@@ -63,21 +68,14 @@ export const getGetAdminUrl = () => {
 
 export const getAdmin = async ( options?: RequestInit): Promise<getAdminResponse> => {
 
-  const res = await fetch(getGetAdminUrl(),
+  return customInstance<getAdminResponse>(getGetAdminUrl(),
   {
     ...options,
     method: 'GET'
 
 
   }
-)
-
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-  const data: getAdminResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as getAdminResponse
-}
+);}
 
 
 
@@ -90,16 +88,16 @@ export const getGetAdminQueryKey = () => {
     }
 
 
-export const getGetAdminQueryOptions = <TData = Awaited<ReturnType<typeof getAdmin>>, TError = ErrorResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdmin>>, TError, TData>>, fetch?: RequestInit}
+export const getGetAdminQueryOptions = <TData = Awaited<ReturnType<typeof getAdmin>>, TError = ErrorResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdmin>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
-const {query: queryOptions, fetch: fetchOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetAdminQueryKey();
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdmin>>> = ({ signal }) => getAdmin({ signal, ...fetchOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdmin>>> = ({ signal }) => getAdmin({ signal, ...requestOptions });
 
 
 
@@ -119,7 +117,7 @@ export function useGetAdmin<TData = Awaited<ReturnType<typeof getAdmin>>, TError
           TError,
           Awaited<ReturnType<typeof getAdmin>>
         > , 'initialData'
-      >, fetch?: RequestInit}
+      >, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetAdmin<TData = Awaited<ReturnType<typeof getAdmin>>, TError = ErrorResponse>(
@@ -129,16 +127,16 @@ export function useGetAdmin<TData = Awaited<ReturnType<typeof getAdmin>>, TError
           TError,
           Awaited<ReturnType<typeof getAdmin>>
         > , 'initialData'
-      >, fetch?: RequestInit}
+      >, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetAdmin<TData = Awaited<ReturnType<typeof getAdmin>>, TError = ErrorResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdmin>>, TError, TData>>, fetch?: RequestInit}
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdmin>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
 export function useGetAdmin<TData = Awaited<ReturnType<typeof getAdmin>>, TError = ErrorResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdmin>>, TError, TData>>, fetch?: RequestInit}
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdmin>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
@@ -184,35 +182,28 @@ export const getPostAdminUrl = () => {
 
 export const postAdmin = async (adminCreateRequest: AdminCreateRequest, options?: RequestInit): Promise<postAdminResponse> => {
 
-  const res = await fetch(getPostAdminUrl(),
+  return customInstance<postAdminResponse>(getPostAdminUrl(),
   {
     ...options,
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...options?.headers },
     body: JSON.stringify(adminCreateRequest)
   }
-)
-
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-  const data: postAdminResponse['data'] = body ? JSON.parse(body) : undefined
-  return { data, status: res.status, headers: res.headers } as postAdminResponse
-}
+);}
 
 
 
 
 export const getPostAdminMutationOptions = <TError = ErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAdmin>>, TError,{data: AdminCreateRequest}, TContext>, fetch?: RequestInit}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAdmin>>, TError,{data: AdminCreateRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
 ): UseMutationOptions<Awaited<ReturnType<typeof postAdmin>>, TError,{data: AdminCreateRequest}, TContext> => {
 
 const mutationKey = ['postAdmin'];
-const {mutation: mutationOptions, fetch: fetchOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, fetch: undefined};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -220,7 +211,7 @@ const {mutation: mutationOptions, fetch: fetchOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAdmin>>, {data: AdminCreateRequest}> = (props) => {
           const {data} = props ?? {};
 
-          return  postAdmin(data,fetchOptions)
+          return  postAdmin(data,requestOptions)
         }
 
 
@@ -235,7 +226,7 @@ const {mutation: mutationOptions, fetch: fetchOptions} = options ?
     export type PostAdminMutationError = ErrorResponse
 
     export const usePostAdmin = <TError = ErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAdmin>>, TError,{data: AdminCreateRequest}, TContext>, fetch?: RequestInit}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAdmin>>, TError,{data: AdminCreateRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof postAdmin>>,
         TError,

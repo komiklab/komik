@@ -7,7 +7,18 @@ import {
   Container,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
-export default function AdminForm() {
+
+interface AdminFormProps {
+  onSubmit: (values: AdminFormValues) => void;
+  submitLabel: string;
+}
+
+export type AdminFormValues = {
+  email: string;
+  password: string;
+};
+
+export default function AdminForm({ onSubmit, submitLabel }: AdminFormProps) {
   const form = useForm({
     mode: "uncontrolled",
     initialValues: {
@@ -27,7 +38,7 @@ export default function AdminForm() {
         Create Administrator
       </Title>
       <Paper withBorder shadow="md" p={30} mt={30} radius="md">
-        <form onSubmit={form.onSubmit((values) => console.log(values))}>
+        <form onSubmit={form.onSubmit(onSubmit)}>
           <TextInput
             label="Email"
             placeholder="you@mantine.dev"
@@ -43,8 +54,8 @@ export default function AdminForm() {
             {...form.getInputProps("password")}
             required
           />
-          <Button fullWidth mt="xl" type="submit">
-            Create
+          <Button fullWidth mt="xl" type="submit" >
+            {submitLabel}
           </Button>
         </form>
       </Paper>

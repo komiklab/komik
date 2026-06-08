@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/asaskevich/govalidator/v12"
 	"github.com/komiklab/komik/apidefn"
 	"github.com/komiklab/komik/internal"
 	"github.com/komiklab/komik/internal/client"
@@ -29,6 +30,7 @@ func (h *HttpComponent) GetName() string {
 
 func (h *HttpComponent) Init() {
 	h.e = echo.New()
+	h.e.Validator = &CustomValidator{}
 	h.addMiddleware()
 	handler := httphandler.NewHttpHandler(h.cfg, h.dbclient)
 	apidefn.RegisterHandlersWithOptions(h.e, handler, apidefn.RegisterHandlersOptions{
@@ -72,16 +74,26 @@ func (h *HttpComponent) addMiddleware() {
 	h.e.Use(middleware.Recover())
 	h.e.Use(middleware.RequestID())
 	h.e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins:     []string{h.cfg.CORSSupport},
-		AllowHeaders:     []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
+		AllowOrigins: []string{h.cfg.CORSSupport},
+		AllowHeaders: []string{
+			echo.HeaderOrigin,
+			echo.HeaderContentType,
+			echo.HeaderAccept,
+			echo.HeaderAuthorization,
+			"X-CSRF-Token", // required so CORS preflight allows the CSRF header
+		},
+		// ExposeHeaders allows the browser to expose these response headers to
+		// frontend JavaScript on cross-origin requests.
+		ExposeHeaders:    []string{"X-CSRF-Token"},
 		AllowCredentials: true,
 	}))
 	h.e.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{
 		TokenLookup:    "header:X-CSRF-Token",
 		ContextKey:     "csrf",
 		CookieName:     "_csrf",
-		CookieSecure:   true,
-		CookieHTTPOnly: false,
+		TrustedOrigins: []string{h.cfg.CORSSupport},
+		CookieSecure:   false, // must be false for local HTTP dev; set to true behind TLS in prod
+		CookieHTTPOnly: false, // must be false so JS can read the cookie value
 		CookieSameSite: http.SameSiteLaxMode,
 	}))
 	h.e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
@@ -100,4 +112,16 @@ func (h *HttpComponent) addMiddleware() {
 			return nil
 		},
 	}))
+}
+
+type CustomValidator struct {
+}
+
+func (c *CustomValidator) Validate(i any) error {
+	_, err := govalidator.ValidateStruct(i)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

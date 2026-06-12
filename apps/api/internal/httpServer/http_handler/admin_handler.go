@@ -40,24 +40,31 @@ func (h *HttpHandler) GetAdmin(ctx *echo.Context) error {
 // PostAdmin implements [apidefn.ServerInterface].
 func (h *HttpHandler) PostAdmin(ctx *echo.Context) error {
 	var req apidefn.AdminCreateRequest
-	if err := ctx.Bind(&req); err != nil {
+	if err := ctx.Bind(&req); utils.IsErrNotNil(err) {
 		return ctx.JSON(http.StatusBadRequest, utils.NewBindError("failed to bind request", err))
 	}
-	if err := ctx.Validate(req); err != nil {
+	if err := ctx.Validate(req); utils.IsErrNotNil(err) {
 		return ctx.JSON(http.StatusBadRequest, utils.NewValidationError("validation failed", err))
 	}
-	auth := auth.NewAuthService(h.dbclient)
+	authsrv := auth.NewAuthService(h.dbclient)
 	adminDao := models.NewAdminDAO(req.Username, req.Password)
 	_, err := govalidator.ValidateStruct(adminDao)
-	if utils.IsErrNil(err) {
+	if utils.IsErrNotNil(err) {
 		return ctx.JSON(http.StatusBadRequest, utils.NewValidationError("validation failed", err))
 	}
-	if err := auth.CreateAdmin(models.NewAdminDAO(req.Username, req.Password)); err != nil {
+	if err := authsrv.CreateAdmin(models.NewAdminDAO(req.Username, req.Password)); utils.IsErrNotNil(err) {
 		komikErr, ok := err.(*utils.KomikError)
 		if !ok {
 			komikErr = utils.NewGeneralError(err)
 		}
 		return ctx.JSON(int(komikErr.StatusCode), komikErr)
+	}
+	// publish an successful event
+	reqId := ctx.Response().Header().Get(echo.HeaderXRequestID)
+	msg, err := authsrv.MessageEventAdminCreated(adminDao.Username, reqId)
+	if !utils.IsErrNotNil(err) {
+		err := h.publisher.Publish(auth.EventAdminCreatedSubject, msg)
+		utils.IsErrNotNil(err)
 	}
 	return ctx.NoContent(http.StatusCreated)
 }

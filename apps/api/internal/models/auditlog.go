@@ -11,7 +11,7 @@ type AuditLog struct {
 	EventType     string    `gorm:"type:varchar(255);not null"`
 	EventVersion  int       `gorm:"not null;default:1"`
 	OccurredAt    int64     `gorm:"autoCreateTime"`
-	CorrelationId uuid.UUID `gorm:"type:uuid;not null"`
+	CorrelationId string    `gorm:"type:string;not null"`
 	InitiatorId   string    `gorm:"type:varchar(255);not null"`
 	InitiatorType string    `gorm:"type:varchar(255);not null"`
 	ResourceType  string    `gorm:"type:varchar(255);not null"`
@@ -22,4 +22,8 @@ type AuditLog struct {
 
 func (a *AuditLog) Unmarshal(data []byte) error {
 	return json.Unmarshal(data, a)
+}
+
+func (a *AuditLog) Marshal() ([]byte, error) {
+	return json.Marshal(a)
 }

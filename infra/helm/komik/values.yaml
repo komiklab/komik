@@ -177,7 +177,7 @@ postgresql:
       scripts:
         init_database.sql: |
           -- initialize postgresql
-          CREATE EXTENSION IF NOT EXIST "uuid-ossp";
+          CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 nats:
   enabled: true

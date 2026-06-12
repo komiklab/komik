@@ -26,9 +26,9 @@ func main() {
 	}
 	// we will set colorful os.std
 	log.Logger = log.With().Caller().Logger().Output(zerolog.ConsoleWriter{Out: os.Stdout})
-	log.Debug().Msg("Starting API server with debug logging enabled")
+	log.Debug().Msg("Starting API server with debug logging enabled ")
 	postgresclient := client.NewPostgresClient(cfg)
-	postgresclient.Migrate(&models.Admin{})
+	postgresclient.Migrate(&models.Admin{}, models.AuditLog{})
 	contrlr := controller.NewController(cfg)
 	publisher := event.NewPublisher(cfg)
 	httpComponent := httpserver.NewHttpComponent(cfg, postgresclient, publisher)

@@ -5,6 +5,7 @@ import (
 	"github.com/komiklab/komik/internal/client"
 	"github.com/komiklab/komik/internal/models"
 	"github.com/komiklab/komik/internal/repositories"
+	"github.com/komiklab/komik/internal/utils"
 )
 
 type EventHandler struct {
@@ -20,10 +21,14 @@ func NewEventHandler(dbcon *client.PostgresClient) *EventHandler {
 
 func (h *EventHandler) HandleAuditLog(msg *message.Message) error {
 	auditlogData := msg.Payload
-	var auditlogModel *models.AuditLog
+	auditlogModel := &models.AuditLog{}
 	err := auditlogModel.Unmarshal(auditlogData)
-	if err != nil {
+	if utils.IsErrNotNil(err) {
 		return err
 	}
-	return h.auditLogRepo.Save(auditlogModel)
+	err = h.auditLogRepo.Save(auditlogModel)
+	if utils.IsErrNotNil(err) {
+		return err
+	}
+	return nil
 }

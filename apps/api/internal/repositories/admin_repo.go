@@ -2,6 +2,8 @@ package repositories
 
 import (
 	//"github.com/komiklab/komik/apidefn"
+	"errors"
+
 	"github.com/komiklab/komik/internal/client"
 	"github.com/komiklab/komik/internal/models"
 	"github.com/komiklab/komik/internal/utils"
@@ -27,9 +29,13 @@ func (a *AdminRepo) DoesAdminExist() (bool, error) {
 }
 
 func (a *AdminRepo) CreateAdmin(admin *models.Admin) error {
-	err := a.gormdb.FirstOrCreate(admin, &models.Admin{ID: 1}).Error
+	result := a.gormdb.FirstOrCreate(admin, &models.Admin{ID: 1})
+	err := result.Error
 	if err != nil {
 		return utils.NewDatabaseError("failed to create admin", err)
+	}
+	if (result.RowsAffected == 0) {
+		return utils.NewConflictError("admin already exist", errors.New("admin already exist"))
 	}
 	return nil
 }

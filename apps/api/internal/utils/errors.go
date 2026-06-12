@@ -11,7 +11,7 @@ import (
 type KomikError struct {
 	ErrorCode       string         `json:"error_code"`
 	ErrorMessage    string         `json:"error_message"`
-	DetailedMessage string         `json:"-"`
+	DetailedMessage string         `json:"DetailedMessage,omitempty"`
 	OriginalErrors  error          `json:"-"`
 	StatusCode      http.ConnState `json:"-"`
 }
@@ -31,7 +31,11 @@ func (e *KomikError) Error() string {
 
 func (e *KomikError) AddOriginalError(err error) {
 	e.OriginalErrors = errors.Join(err, e.OriginalErrors)
-	e.DetailedMessage = e.DetailedMessage + ":: " + err.Error()
+	if e.DetailedMessage == "" {
+		e.DetailedMessage = err.Error()
+	} else {
+		e.DetailedMessage = e.DetailedMessage + ":: " + err.Error()
+	}
 }
 
 func (e *KomikError) clone() *KomikError {
@@ -151,4 +155,8 @@ func NewBadRequestError(message string, err error) *KomikError {
 		WithErrorMessage(message).
 		WithStatusCode(http.StatusBadRequest).
 		WithOriginalError(err)
+}
+
+func NewGeneralError(err error) *KomikError {
+	return NewInternalServerError("an unexpected error occurred", err)
 }

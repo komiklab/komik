@@ -24,7 +24,9 @@ func main() {
 	} else {
 		zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	}
-	log.Logger = log.With().Caller().Logger()
+	// we will set colorful os.std
+	log.Logger = log.With().Caller().Logger().Output(zerolog.ConsoleWriter{Out: os.Stdout})
+	log.Debug().Msg("Starting API server with debug logging enabled")
 	postgresclient := client.NewPostgresClient(cfg)
 	postgresclient.Migrate(&models.Admin{})
 	contrlr := controller.NewController(cfg)

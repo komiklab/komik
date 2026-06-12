@@ -1,6 +1,8 @@
 package client
 
 import (
+	"time"
+
 	"github.com/komiklab/komik/internal"
 	"github.com/rs/zerolog/log"
 	"gorm.io/driver/postgres"
@@ -42,6 +44,7 @@ func (p *PostgresClient) Migrate(models ...any) {
 }
 
 func NewPostgresClient(cfg *internal.Config) *PostgresClient {
+	log.Debug().Msg("Connecting to database with DSN: " + cfg.PostgresDSN)
 	dsn := cfg.PostgresDSN
 	gormdb, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
@@ -55,6 +58,10 @@ func NewPostgresClient(cfg *internal.Config) *PostgresClient {
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to ping database")
 	}
+	db.SetConnMaxIdleTime(time.Hour)
+	db.SetConnMaxLifetime(2 * time.Hour)
+	db.SetMaxIdleConns(10)
+	db.SetMaxOpenConns(100)
 	log.Debug().Msg("Connected to database")
 	return &PostgresClient{
 		gormdb: gormdb,

@@ -4,18 +4,17 @@ import (
 	"context"
 
 	"github.com/komiklab/komik/internal"
-	"github.com/komiklab/komik/internal/component"
 	"github.com/rs/zerolog/log"
 )
 
 type Controller struct {
-	components []component.Component
+	components []internal.Component
 	cfg        *internal.Config
 }
 
 func NewController(cfg *internal.Config) *Controller {
 	return &Controller{
-		components: make([]component.Component, 0),
+		components: make([]internal.Component, 0),
 		cfg:        cfg,
 	}
 }
@@ -45,6 +44,6 @@ func (c *Controller) Stop() {
 	}
 }
 
-func (c *Controller) AddComponent(comp component.Component) {
+func (c *Controller) AddComponent(comp internal.Component) {
 	c.components = append(c.components, comp)
 }

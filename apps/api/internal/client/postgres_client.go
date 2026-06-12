@@ -7,13 +7,11 @@ import (
 	"gorm.io/gorm"
 )
 
-var _ Client = (*PostgresClient)(nil)
-
 type PostgresClient struct {
 	gormdb *gorm.DB
 }
 
-func (p *PostgresClient) GetClient() any {
+func (p *PostgresClient) GetClient() *gorm.DB {
 	return p.gormdb
 }
 

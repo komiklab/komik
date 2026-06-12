@@ -1,4 +1,4 @@
-package component
+package httpserver
 
 import (
 	"context"
@@ -9,20 +9,25 @@ import (
 	"github.com/komiklab/komik/apidefn"
 	"github.com/komiklab/komik/internal"
 	"github.com/komiklab/komik/internal/client"
-	httphandler "github.com/komiklab/komik/internal/handler/http_handler"
+	"github.com/komiklab/komik/internal/event"
+	httphandler "github.com/komiklab/komik/internal/httpServer/http_handler"
+	"github.com/komiklab/komik/internal/utils"
+
+	// httphandler "github.com/komiklab/komik/internal/httpServer/handler/http_handler"
 	"github.com/labstack/echo/v5"
 	"github.com/labstack/echo/v5/middleware"
 	"github.com/rs/zerolog/log"
 )
 
 type HttpComponent struct {
-	e        *echo.Echo
-	s        *http.Server
-	cfg      *internal.Config
-	dbclient client.Client
+	e         *echo.Echo
+	s         *http.Server
+	cfg       *internal.Config
+	dbclient  *client.PostgresClient
+	publisher *event.Publisher
 }
 
-var _ Component = (*HttpComponent)(nil)
+var _ internal.Component = (*HttpComponent)(nil)
 
 func (h *HttpComponent) GetName() string {
 	return "HttpComponent"
@@ -32,7 +37,7 @@ func (h *HttpComponent) Init() {
 	h.e = echo.New()
 	h.e.Validator = &CustomValidator{}
 	h.addMiddleware()
-	handler := httphandler.NewHttpHandler(h.cfg, h.dbclient)
+	handler := httphandler.NewHttpHandler(h.cfg, h.dbclient, h.publisher)
 	apidefn.RegisterHandlersWithOptions(h.e, handler, apidefn.RegisterHandlersOptions{
 		BaseURL:              "/api/v1",
 		OperationMiddlewares: map[string][]echo.MiddlewareFunc{},
@@ -63,10 +68,11 @@ func (h *HttpComponent) Stop(ctx context.Context) {
 	}
 }
 
-func NewHttpComponent(cfg *internal.Config, dbclient client.Client) *HttpComponent {
+func NewHttpComponent(cfg *internal.Config, dbclient *client.PostgresClient, publisher *event.Publisher) *HttpComponent {
 	return &HttpComponent{
-		cfg:      cfg,
-		dbclient: dbclient,
+		cfg:       cfg,
+		dbclient:  dbclient,
+		publisher: publisher,
 	}
 }
 
@@ -120,8 +126,7 @@ type CustomValidator struct {
 func (c *CustomValidator) Validate(i any) error {
 	_, err := govalidator.ValidateStruct(i)
 	if err != nil {
-		return err
+		return utils.NewValidationError(err.Error())
 	}
-
 	return nil
 }

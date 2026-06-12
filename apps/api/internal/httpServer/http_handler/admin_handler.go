@@ -1,9 +1,12 @@
 package httphandler
 
 import (
+	"net/http"
+
 	"github.com/komiklab/komik/apidefn"
 	"github.com/komiklab/komik/internal/auth"
 	"github.com/komiklab/komik/internal/models"
+	"github.com/komiklab/komik/internal/utils"
 	"github.com/labstack/echo/v5"
 )
 
@@ -35,22 +38,14 @@ func (h *HttpHandler) GetAdmin(ctx *echo.Context) error {
 func (h *HttpHandler) PostAdmin(ctx *echo.Context) error {
 	var req apidefn.AdminCreateRequest
 	if err := ctx.Bind(&req); err != nil {
-		return ctx.JSON(400, map[string]interface{}{
-			"error": err.Error(),
-		})
+		return ctx.JSON(http.StatusBadRequest, utils.NewBindError(err.Error()))
 	}
 	if err := ctx.Validate(req); err != nil {
-		return ctx.JSON(400, map[string]interface{}{
-			"error": err.Error(),
-		})
+		return ctx.JSON(http.StatusBadRequest, utils.NewValidationError(err.Error()))
 	}
 	auth := auth.NewAuthService(h.dbclient)
 	if err := auth.CreateAdmin(&models.Admin{Username: req.Username, Password: req.Password}); err != nil {
-		return ctx.JSON(500, map[string]interface{}{
-			"error": err.Error(),
-		})
+		return ctx.JSON(err.StatusCode, utils.NewInternalServerError(err.Error()))
 	}
-	return ctx.JSON(201, map[string]interface{}{
-		"message": "Admin created successfully",
-	})
+	return ctx.NoContent(http.StatusCreated)
 }

@@ -7,8 +7,9 @@ import (
 
 type Config struct {
 	IsDebugLoggerConfig bool   `env:"IS_DEBUG_LOGGER_CONFIG" envDefault:"true"`
-	PostgresDSN         string `env:"POSTGRES_DSN" envDefault:"postgres://komik:komik@localhost:5433/komik?sslmode=disable"`
+	PostgresDSN         string `env:"POSTGRES_DSN" envDefault:"postgres://komik:komik@localhost:5434/komik?sslmode=disable"`
 	CORSSupport         string `env:"CORS_SUPPORT" envDefault:"http://localhost:3000"`
+	NatsURL             string `env:"NATS_URL" envDefault:"nats://localhost:4222"`
 }
 
 func NewConfig() *Config {

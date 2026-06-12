@@ -9,8 +9,9 @@ import (
 
 	"github.com/komiklab/komik/internal"
 	"github.com/komiklab/komik/internal/client"
-	"github.com/komiklab/komik/internal/component"
 	"github.com/komiklab/komik/internal/controller"
+	"github.com/komiklab/komik/internal/event"
+	httpserver "github.com/komiklab/komik/internal/httpServer"
 	"github.com/komiklab/komik/internal/models"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -27,7 +28,10 @@ func main() {
 	postgresclient := client.NewPostgresClient(cfg)
 	postgresclient.Migrate(&models.Admin{})
 	contrlr := controller.NewController(cfg)
-	httpComponent := component.NewHttpComponent(cfg, postgresclient)
+	publisher := event.NewPublisher(cfg)
+	httpComponent := httpserver.NewHttpComponent(cfg, postgresclient, publisher)
+	eventComponent := event.NewEventLoopComponent(cfg, postgresclient)
+	contrlr.AddComponent(eventComponent)
 	contrlr.AddComponent(httpComponent)
 	contrlr.Init()
 	contrlr.Start()

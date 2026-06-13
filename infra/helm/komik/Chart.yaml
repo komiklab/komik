@@ -13,4 +13,8 @@ dependencies:
     repository: https://nats-io.github.io/k8s/helm/charts
     version: 2.14.0
     condition: nats.enabled
+  - name: redis
+    repository: oci://registry-1.docker.io/bitnamicharts
+    version: 23.1.1
+    condition: redis.enabled
 

@@ -36,9 +36,8 @@ type ErrorResponse struct {
 
 // UserResponse defines model for userResponse.
 type UserResponse struct {
-	Email *openapi_types.Email `json:"email,omitempty"`
-	Id    *int                 `json:"id,omitempty"`
-	Name  *string              `json:"name,omitempty"`
+	Id       *openapi_types.UUID  `json:"id,omitempty"`
+	Username *openapi_types.Email `json:"username,omitempty"`
 }
 
 // PostAdminJSONRequestBody defines body for PostAdmin for application/json ContentType.
@@ -61,6 +60,9 @@ type ServerInterface interface {
 
 	// (POST /auth/logout)
 	PostAuthLogout(ctx *echo.Context) error
+
+	// (GET /auth/me)
+	GetAuthMe(ctx *echo.Context) error
 }
 
 // ServerInterfaceWrapper converts echo contexts to parameters.
@@ -101,6 +103,15 @@ func (w *ServerInterfaceWrapper) PostAuthLogout(ctx *echo.Context) error {
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.PostAuthLogout(ctx)
+	return err
+}
+
+// GetAuthMe converts echo context to params.
+func (w *ServerInterfaceWrapper) GetAuthMe(ctx *echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetAuthMe(ctx)
 	return err
 }
 
@@ -155,6 +166,7 @@ func RegisterHandlersWithOptions(router EchoRouter, si ServerInterface, options 
 	router.POST(options.BaseURL+"/admin", wrapper.PostAdmin, options.OperationMiddlewares["PostAdmin"]...)
 	router.POST(options.BaseURL+"/auth/login", wrapper.PostAuthLogin, options.OperationMiddlewares["PostAuthLogin"]...)
 	router.POST(options.BaseURL+"/auth/logout", wrapper.PostAuthLogout, options.OperationMiddlewares["PostAuthLogout"]...)
+	router.GET(options.BaseURL+"/auth/me", wrapper.GetAuthMe, options.OperationMiddlewares["GetAuthMe"]...)
 
 }
 
@@ -163,15 +175,16 @@ func RegisterHandlersWithOptions(router EchoRouter, si ServerInterface, options 
 // const string: with thousands of chunks the chained `+` fold is several
 // times slower for the Go compiler than parsing a slice literal.
 var swaggerSpec = []string{
-	"1FVBT9w8EP0r0XzfMdoshV5yo0hFiKpFXKsVMslsYpp4zHhCi1b579U4ESFsoD3sgZ5ijWfm+c17dnZQ",
-	"UOvJoZMA+Q5CUWNr4tKUrXVnjEbwGu87DKJRz+SRxWLM8SaEn8SlrrfErRHIp2AK8ugRcgjC1lXQp9AF",
-	"ZGda1IIXm30KjPedZSwh/z5lplPDzVNHur3DQrRjPOY5yjUGTy7g/iHxlw0Du7H4lqhB4/Ygx8QlFGQm",
-	"fgNCt28KKpeIjdU3LYZgqleo7yEq/zcAW2Ob2dSHyMLIbfkM0TrBClnjr8vw4iwasm5LMdlKo3unVxfJ",
-	"GTlhU0hItsTJJbX2B6TwgBwsOcjhaLVWHPLojLeQw/FqvTqOekodWWRRPF1VGN2lFI1Ychcl5HCOchoT",
-	"VKZhErHsw3qtn4KcoIt1xvvGFrEyuwvkJivr6n/GLeTwXzZ5PRuNnu3ZJ9ItMRRsvQxEvl0qj5P1ycFQ",
-	"53ZagPxKknymzpWK/PGAfP+IrA5hZ5okID8gJ7FgsIWpgl6TQbRNn4KnsCDbFYVnusWX4xOVj4eVbP4w",
-	"9fOrLNxhv2eaI/3MyQ5d3vOQ+xQy00mdNVQNV+WNoXdSf4lp72vwhxvs7FF89aa+Nyk7qV8oSZ38lZSa",
-	"tzzOf4h3n8KQo9EddNxADrWID3mWGW9Xw+5KMEj2cAT95qnHbvxLjdehT6eANu83/e8AAAD//w==",
+	"3FVNb9swDP0rBrejEbsfu/jWFVhRdB9Fr0NQqDYTq7NFVaKyFYH/+0A5iOc6aXfIgGAnCxLJp/f4TK2h",
+	"pNaSQcMeijX4ssZWxaWqWm0uHSrGO3wK6Fl2rSOLjjXGGKu8/0mukvWCXKsYimEzBX62CAV4dtosoUsh",
+	"eHRGtSgJLw67FBw+Be2wguL7EJkOBefbivTwiCVLxXjNK+Q79JaMx+kl8Zf2PbtN8gNRg8pMIDeBu1DQ",
+	"OXKvQMjxfUnVLmKb7PsWvVfLPdQniMJ/P6AeSx6CflPubTC2SjfT6OklZEubBcUba27k7OL2Orkkw06V",
+	"7JMFueSGWv0DUlih85oMFHAyywWcLBplNRRwNstnZ7GRXMfrZ7FrslpitJVwU6zJXFdQwBXyRQyQ/vQS",
+	"xLTTPJdPSYbRxDxlbaPLmJk9ejKDh2X13uECCniXDSbPNg7PJr6JdCv0pdOWeyLfboTHeX5+MNSxj3ZA",
+	"fiVOPlEwlSB/OCDfN5G1YTFLk3h0K3RJTOhtoZZe/o++afMuBUt+R9tuyf/RtzgyPlL1fNiWjSdSN/6H",
+	"2QXsJqY5kc+YbF/lmEXuUshU4DpraNn/Kq+IHrj+HMOOSfiz/HQq/NF6O3D9QnUK/FeyS9z/RL1/LvYO",
+	"5sD1F/yXk3n08u2dykcqYpdCHyO7awiugQJqZuuLLFNWz/rTGaPnbHUC3XxbYw39U70ZAV06bEjxbt79",
+	"DgAA//8=",
 }
 
 // decodeSpec returns the embedded OpenAPI spec as raw JSON bytes,

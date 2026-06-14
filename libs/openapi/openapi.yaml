@@ -20,12 +20,8 @@ paths:
             schema:
               $ref: "#/components/schemas/adminCreateRequest"
       responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/userResponse"
+        "302":
+          description: Found
         "500":
           description: internal server error
           content:
@@ -37,8 +33,25 @@ paths:
       tags:
         - auth
       responses:
+        "302":
+          description: Found
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+  /auth/me:
+    get:
+      tags:
+        - auth
+      responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/userResponse"
         "500":
           description: internal server error
           content:
@@ -93,12 +106,11 @@ components:
       type: object
       properties:
         id:
-          type: integer
-        email:
+          type: string
+          format: uuid
+        username:
           type: string
           format: email
-        name:
-          type: string
     errorResponse:
       type: object
       properties:

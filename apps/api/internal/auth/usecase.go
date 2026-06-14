@@ -13,8 +13,8 @@ type AuthService struct {
 	authrepo *repositories.AdminRepo
 }
 
-func NewAuthService(dbcon *client.PostgresClient) *AuthService {
-	authrepo := repositories.NewAdminRepo(dbcon)
+func NewAuthService(dbcon *client.PostgresClient, cache *client.RedisClient) *AuthService {
+	authrepo := repositories.NewAdminRepo(dbcon, cache)
 	return &AuthService{
 		authrepo: authrepo,
 	}
@@ -52,3 +52,19 @@ func (a *AuthService) VerifyPassword(admin *models.Admin) error {
 	}
 	return nil
 }
+
+func (a *AuthService) CreateSession(user models.UserRepresentation) (string, error){
+	// we will first store the user if its new in database
+	err := a.authrepo.SaveUserIfNotExist(user)
+	if utils.IsErrNotNil(err) {
+		return "", err
+	}
+	// then we will create session for the user
+	sessionID, err := a.authrepo.CreateSession(&user)
+	if utils.IsErrNotNil(err) {
+		return "", err
+	}	
+	return sessionID, nil
+}
+	
+

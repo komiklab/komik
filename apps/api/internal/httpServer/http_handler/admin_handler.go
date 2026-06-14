@@ -18,7 +18,7 @@ func (h *HttpHandler) GetAdmin(ctx *echo.Context) error {
 	// 	(*ctx).Response().Header().Set("X-CSRF-Token", csrfToken)
 	// }
 
-	auth := auth.NewAuthService(h.dbclient)
+	auth := auth.NewAuthService(h.dbclient, h.cache)
 	exists, err := auth.DoesAdminExist()
 	if err != nil {
 		komikErr, ok := err.(*utils.KomikError)
@@ -43,7 +43,7 @@ func (h *HttpHandler) PostAdmin(ctx *echo.Context) error {
 	if err := ctx.Bind(&req); utils.IsErrNotNil(err) {
 		return ctx.JSON(http.StatusBadRequest, utils.NewBindError("failed to bind request", err))
 	}
-	authsrv := auth.NewAuthService(h.dbclient)
+	authsrv := auth.NewAuthService(h.dbclient, h.cache)
 	adminDao := models.NewAdminDAO(req.Username, req.Password)
 	_, err := govalidator.ValidateStruct(adminDao)
 	if utils.IsErrNotNil(err) {
@@ -72,7 +72,7 @@ func (h *HttpHandler) PostAuthLogin(ctx *echo.Context) error {
 	if err := ctx.Bind(&req); utils.IsErrNotNil(err) {
 		return ctx.JSON(http.StatusBadRequest, utils.NewBindError("failed to bind request", err))
 	}
-	authsrv := auth.NewAuthService(h.dbclient)
+	authsrv := auth.NewAuthService(h.dbclient, h.cache)
 	adminDao := models.NewAdminDAO(req.Username, req.Password)
 	if err := authsrv.VerifyPassword(adminDao); utils.IsErrNotNil(err) {
 		komikErr, ok := err.(*utils.KomikError)
@@ -81,6 +81,28 @@ func (h *HttpHandler) PostAuthLogin(ctx *echo.Context) error {
 		}
 		return ctx.JSON(int(komikErr.StatusCode), komikErr)
 	}
+	user := models.NewUserRepresentation(adminDao.Username)
+	sessionID, err := authsrv.CreateSession(*user)
+	if utils.IsErrNotNil(err) {
+		komikErr, ok := err.(*utils.KomikError)
+		if !ok {
+			komikErr = utils.NewGeneralError(err)
+		}
+		return ctx.JSON(int(komikErr.StatusCode), komikErr)
+	}
+	// lets set http cookie
+	sessionTTL := utils.SESSION_TTL
+	sessionCookie := http.Cookie{
+		Name: utils.SESSION_COOKIE_NAME,
+		Value: sessionID,
+		Path: "/",
+		MaxAge: int(sessionTTL.Seconds()),
+		HttpOnly: true,
+		Secure: ctx.Request().TLS != nil,
+		SameSite: http.SameSiteLaxMode,
+	}
+	http.SetCookie(ctx.Response(), &sessionCookie)
+	//return ctx.Redirect(http.StatusFound, h.cfg.PostLoginRedirect)
 	return ctx.NoContent(http.StatusOK)
 }
 

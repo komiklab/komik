@@ -10,6 +10,8 @@ type Config struct {
 	PostgresDSN         string `env:"POSTGRES_DSN" envDefault:"postgres://komik:komik@localhost:5434/komik?sslmode=disable"`
 	CORSSupport         string `env:"CORS_SUPPORT" envDefault:"http://localhost:3000"`
 	NatsURL             string `env:"NATS_URL" envDefault:"nats://localhost:4222"`
+	RedisDSN            string `env:"REDIS_DSN" envDefault:"redis://localhost:6381"`
+	PostLoginRedirect   string `env:"POST_LOGIN_REDIRECT" envDefault:"http://localhost:3000/"`
 }
 
 func NewConfig() *Config {

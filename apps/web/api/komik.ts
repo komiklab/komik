@@ -35,9 +35,9 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
 
-export type postAuthLoginResponse200 = {
-  data: UserResponse
-  status: 200
+export type postAuthLoginResponse302 = {
+  data: void
+  status: 302
 }
 
 export type postAuthLoginResponse500 = {
@@ -45,14 +45,12 @@ export type postAuthLoginResponse500 = {
   status: 500
 }
 
-export type postAuthLoginResponseSuccess = (postAuthLoginResponse200) & {
-  headers: Headers;
-};
-export type postAuthLoginResponseError = (postAuthLoginResponse500) & {
+;
+export type postAuthLoginResponseError = (postAuthLoginResponse302 | postAuthLoginResponse500) & {
   headers: Headers;
 };
 
-export type postAuthLoginResponse = (postAuthLoginResponseSuccess | postAuthLoginResponseError)
+export type postAuthLoginResponse = (postAuthLoginResponseError)
 
 export const getPostAuthLoginUrl = () => {
 
@@ -76,7 +74,7 @@ export const postAuthLogin = async (adminCreateRequest: AdminCreateRequest, opti
 
 
 
-export const getPostAuthLoginMutationOptions = <TError = ErrorResponse,
+export const getPostAuthLoginMutationOptions = <TError = void | ErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAuthLogin>>, TError,{data: AdminCreateRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
 ): UseMutationOptions<Awaited<ReturnType<typeof postAuthLogin>>, TError,{data: AdminCreateRequest}, TContext> => {
 
@@ -105,9 +103,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type PostAuthLoginMutationResult = NonNullable<Awaited<ReturnType<typeof postAuthLogin>>>
     export type PostAuthLoginMutationBody = AdminCreateRequest
-    export type PostAuthLoginMutationError = ErrorResponse
+    export type PostAuthLoginMutationError = void | ErrorResponse
 
-    export const usePostAuthLogin = <TError = ErrorResponse,
+    export const usePostAuthLogin = <TError = void | ErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAuthLogin>>, TError,{data: AdminCreateRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof postAuthLogin>>,
@@ -118,9 +116,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       return useMutation(getPostAuthLoginMutationOptions(options), queryClient);
     }
 
-export type postAuthLogoutResponse200 = {
+export type postAuthLogoutResponse302 = {
   data: void
-  status: 200
+  status: 302
 }
 
 export type postAuthLogoutResponse500 = {
@@ -128,14 +126,12 @@ export type postAuthLogoutResponse500 = {
   status: 500
 }
 
-export type postAuthLogoutResponseSuccess = (postAuthLogoutResponse200) & {
-  headers: Headers;
-};
-export type postAuthLogoutResponseError = (postAuthLogoutResponse500) & {
+;
+export type postAuthLogoutResponseError = (postAuthLogoutResponse302 | postAuthLogoutResponse500) & {
   headers: Headers;
 };
 
-export type postAuthLogoutResponse = (postAuthLogoutResponseSuccess | postAuthLogoutResponseError)
+export type postAuthLogoutResponse = (postAuthLogoutResponseError)
 
 export const getPostAuthLogoutUrl = () => {
 
@@ -159,7 +155,7 @@ export const postAuthLogout = async ( options?: RequestInit): Promise<postAuthLo
 
 
 
-export const getPostAuthLogoutMutationOptions = <TError = ErrorResponse,
+export const getPostAuthLogoutMutationOptions = <TError = void | ErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAuthLogout>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
 ): UseMutationOptions<Awaited<ReturnType<typeof postAuthLogout>>, TError,void, TContext> => {
 
@@ -188,9 +184,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type PostAuthLogoutMutationResult = NonNullable<Awaited<ReturnType<typeof postAuthLogout>>>
 
-    export type PostAuthLogoutMutationError = ErrorResponse
+    export type PostAuthLogoutMutationError = void | ErrorResponse
 
-    export const usePostAuthLogout = <TError = ErrorResponse,
+    export const usePostAuthLogout = <TError = void | ErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAuthLogout>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof postAuthLogout>>,
@@ -200,6 +196,120 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getPostAuthLogoutMutationOptions(options), queryClient);
     }
+
+export type getAuthMeResponse200 = {
+  data: UserResponse
+  status: 200
+}
+
+export type getAuthMeResponse500 = {
+  data: ErrorResponse
+  status: 500
+}
+
+export type getAuthMeResponseSuccess = (getAuthMeResponse200) & {
+  headers: Headers;
+};
+export type getAuthMeResponseError = (getAuthMeResponse500) & {
+  headers: Headers;
+};
+
+export type getAuthMeResponse = (getAuthMeResponseSuccess | getAuthMeResponseError)
+
+export const getGetAuthMeUrl = () => {
+
+
+
+
+  return `http://localhost:65080/api/v1/auth/me`
+}
+
+export const getAuthMe = async ( options?: RequestInit): Promise<getAuthMeResponse> => {
+
+  return customInstance<getAuthMeResponse>(getGetAuthMeUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAuthMeQueryKey = () => {
+    return [
+    `http://localhost:65080/api/v1/auth/me`
+    ] as const;
+    }
+
+
+export const getGetAuthMeQueryOptions = <TData = Awaited<ReturnType<typeof getAuthMe>>, TError = ErrorResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthMe>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAuthMeQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAuthMe>>> = ({ signal }) => getAuthMe({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAuthMe>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAuthMeQueryResult = NonNullable<Awaited<ReturnType<typeof getAuthMe>>>
+export type GetAuthMeQueryError = ErrorResponse
+
+
+export function useGetAuthMe<TData = Awaited<ReturnType<typeof getAuthMe>>, TError = ErrorResponse>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthMe>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAuthMe>>,
+          TError,
+          Awaited<ReturnType<typeof getAuthMe>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAuthMe<TData = Awaited<ReturnType<typeof getAuthMe>>, TError = ErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthMe>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAuthMe>>,
+          TError,
+          Awaited<ReturnType<typeof getAuthMe>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAuthMe<TData = Awaited<ReturnType<typeof getAuthMe>>, TError = ErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthMe>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetAuthMe<TData = Awaited<ReturnType<typeof getAuthMe>>, TError = ErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthMe>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAuthMeQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
 
 export type getAdminResponse200 = {
   data: AdminGetResponse

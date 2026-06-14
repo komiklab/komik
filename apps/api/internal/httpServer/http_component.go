@@ -25,6 +25,7 @@ type HttpComponent struct {
 	cfg       *internal.Config
 	dbclient  *client.PostgresClient
 	publisher *event.Publisher
+	redisclient *client.RedisClient
 }
 
 var _ internal.Component = (*HttpComponent)(nil)
@@ -37,10 +38,12 @@ func (h *HttpComponent) Init() {
 	h.e = echo.New()
 	h.e.Validator = &CustomValidator{}
 	h.addMiddleware()
-	handler := httphandler.NewHttpHandler(h.cfg, h.dbclient, h.publisher)
+	handler := httphandler.NewHttpHandler(h.cfg, h.dbclient, h.publisher, h.redisclient)
 	apidefn.RegisterHandlersWithOptions(h.e, handler, apidefn.RegisterHandlersOptions{
 		BaseURL:              "/api/v1",
-		OperationMiddlewares: map[string][]echo.MiddlewareFunc{},
+		OperationMiddlewares: map[string][]echo.MiddlewareFunc{
+			"GetAuthMe": {h.AuthMiddleware()},
+		},
 	})
 }
 
@@ -69,11 +72,12 @@ func (h *HttpComponent) Stop(ctx context.Context) {
 }
 
 
-func NewHttpComponent(cfg *internal.Config, dbclient *client.PostgresClient, publisher *event.Publisher) *HttpComponent {
+func NewHttpComponent(cfg *internal.Config, dbclient *client.PostgresClient, publisher *event.Publisher, redisclient *client.RedisClient) *HttpComponent {
 	return &HttpComponent{
 		cfg:       cfg,
 		dbclient:  dbclient,
 		publisher: publisher,
+		redisclient: redisclient,
 	}
 }
 
@@ -131,3 +135,30 @@ func (c *CustomValidator) Validate(i any) error {
 	}
 	return nil
 }
+
+func (h *HttpComponent) AuthMiddleware() echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(ctx *echo.Context) error {
+			// 1. Check for session cookie
+			cookie, err := ctx.Cookie(utils.SESSION_COOKIE_NAME)
+			if err != nil {
+				// Return 401 Unauthorized if cookie is missing
+				return ctx.JSON(http.StatusUnauthorized, utils.NewAuthenticationError("missing session cookie", err))
+			}
+			// 2. Validate with Redis
+			sessionID := cookie.Value
+			sessionData, err := h.redisclient.Get("session:" + sessionID)
+			if err != nil {
+				// Return 401 Unauthorized if session is invalid or expired in Redis
+				return ctx.JSON(http.StatusUnauthorized, utils.NewAuthenticationError("invalid or expired session", err))
+			}
+			// 3. (Optional) Inject the session data into the context so your GetAuthMe handler can use it
+			ctx.Set("user_session", sessionData)
+			// 4. Proceed to the actual handler (GetAuthMe)
+			return next(ctx)
+		}
+	}
+}
+
+
+

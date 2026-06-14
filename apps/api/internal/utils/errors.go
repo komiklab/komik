@@ -157,6 +157,21 @@ func NewBadRequestError(message string, err error) *KomikError {
 		WithOriginalError(err)
 }
 
+func NewRedisError(message string, err error) *KomikError {
+	return NewKomikError().
+		WithErrorCode("redis_error").
+		WithErrorMessage(message).
+		WithStatusCode(http.StatusInternalServerError).
+		WithOriginalError(err)
+}
+
+func NewRedisReturnsNilError(message string, err error) *KomikError {
+	return NewKomikError().
+		WithErrorCode("redis_returns_nil_error").
+		WithErrorMessage(message).
+		WithOriginalError(err)
+}
+
 func NewGeneralError(err error) *KomikError {
 	return NewInternalServerError("an unexpected error occurred", err)
 }

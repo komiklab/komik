@@ -43,9 +43,6 @@ func (h *HttpHandler) PostAdmin(ctx *echo.Context) error {
 	if err := ctx.Bind(&req); utils.IsErrNotNil(err) {
 		return ctx.JSON(http.StatusBadRequest, utils.NewBindError("failed to bind request", err))
 	}
-	if err := ctx.Validate(req); utils.IsErrNotNil(err) {
-		return ctx.JSON(http.StatusBadRequest, utils.NewValidationError("validation failed", err))
-	}
 	authsrv := auth.NewAuthService(h.dbclient)
 	adminDao := models.NewAdminDAO(req.Username, req.Password)
 	_, err := govalidator.ValidateStruct(adminDao)
@@ -67,4 +64,27 @@ func (h *HttpHandler) PostAdmin(ctx *echo.Context) error {
 		utils.IsErrNotNil(err)
 	}
 	return ctx.NoContent(http.StatusCreated)
+}
+
+// PostAuthLogin implements [apidefn.ServerInterface].
+func (h *HttpHandler) PostAuthLogin(ctx *echo.Context) error {
+	var req apidefn.AdminCreateRequest
+	if err := ctx.Bind(&req); utils.IsErrNotNil(err) {
+		return ctx.JSON(http.StatusBadRequest, utils.NewBindError("failed to bind request", err))
+	}
+	authsrv := auth.NewAuthService(h.dbclient)
+	adminDao := models.NewAdminDAO(req.Username, req.Password)
+	if err := authsrv.VerifyPassword(adminDao); utils.IsErrNotNil(err) {
+		komikErr, ok := err.(*utils.KomikError)
+		if !ok {
+			komikErr = utils.NewGeneralError(err)
+		}
+		return ctx.JSON(int(komikErr.StatusCode), komikErr)
+	}
+	return ctx.NoContent(http.StatusOK)
+}
+
+// PostAuthLogout implements [apidefn.ServerInterface].
+func (h *HttpHandler) PostAuthLogout(ctx *echo.Context) error {
+	panic("unimplemented")
 }

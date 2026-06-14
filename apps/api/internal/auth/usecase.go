@@ -1,6 +1,8 @@
 package auth
 
 import (
+	"errors"
+
 	"github.com/komiklab/komik/internal/client"
 	"github.com/komiklab/komik/internal/models"
 	"github.com/komiklab/komik/internal/repositories"
@@ -33,4 +35,20 @@ func (a *AuthService) CreateAdmin(admin *models.Admin) error {
 		return utils.NewGeneralError(err)
 	}
 	return a.authrepo.CreateAdmin(admin)
+}
+
+func (a *AuthService) VerifyPassword(admin *models.Admin) error {
+	passwordReceived := admin.Password
+	hashedPassword, err := a.authrepo.FetchPassword(admin)
+	if utils.IsErrNotNil(err) {
+		return err
+	}
+	verified, err := utils.VerifyPassword(passwordReceived,hashedPassword)
+	if utils.IsErrNotNil(err) {
+		return utils.NewInternalServerError("could not verify password because of internal issue", err)
+	}
+	if !verified {
+		return utils.NewAuthenticationError("invalid password", errors.New("wrong password"))
+	}
+	return nil
 }

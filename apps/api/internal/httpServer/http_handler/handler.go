@@ -8,15 +8,17 @@ import (
 )
 
 type HttpHandler struct {
-	cfg      *internal.Config
-	dbclient *client.PostgresClient
+	cfg       *internal.Config
+	dbclient  *client.PostgresClient
 	publisher *event.Publisher
 }
 
+
+
 func NewHttpHandler(cfg *internal.Config, dbclient *client.PostgresClient, publisher *event.Publisher) *HttpHandler {
 	return &HttpHandler{
-		cfg:      cfg,
-		dbclient: dbclient,
+		cfg:       cfg,
+		dbclient:  dbclient,
 		publisher: publisher,
 	}
 }

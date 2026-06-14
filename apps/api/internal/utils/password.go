@@ -6,6 +6,8 @@ import (
 	"crypto/subtle"
 	"encoding/base64"
 	"fmt"
+	"strconv"
+	"strings"
 
 	"golang.org/x/crypto/pbkdf2"
 )
@@ -37,13 +39,18 @@ func HashPassword(password string) (string, error) {
 // VerifyPassword securely validates an incoming plaintext password against a stored hash string
 func VerifyPassword(password, storedHash string) (bool, error) {
 	// 1. Parse the stored hash string back into components
-	var parsedIterations int
-	var b64Salt, b64Hash string
-
-	_, err := fmt.Sscanf(storedHash, "$pbkdf2-sha512$%d$%s$%s", &parsedIterations, &b64Salt, &b64Hash)
-	if err != nil {
-		return false, fmt.Errorf("invalid hash format: %w", err)
+	parts := strings.Split(storedHash, "$")
+	if len(parts) != 5 || parts[1] != "pbkdf2-sha512" {
+		return false, fmt.Errorf("invalid hash format")
 	}
+
+	parsedIterations, err := strconv.Atoi(parts[2])
+	if err != nil {
+		return false, fmt.Errorf("invalid iterations format: %w", err)
+	}
+
+	b64Salt := parts[3]
+	b64Hash := parts[4]
 
 	// 2. Decode the salt and the target hash from Base64
 	salt, err := base64.StdEncoding.DecodeString(b64Salt)

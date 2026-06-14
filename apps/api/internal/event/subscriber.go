@@ -2,6 +2,7 @@ package event
 
 import (
 	"fmt"
+	"time"
 
 	js "github.com/ThreeDotsLabs/watermill-nats/v2/pkg/jetstream"
 	"github.com/komiklab/komik/internal"
@@ -17,7 +18,7 @@ func NewNatsSubscriber(cfg *internal.Config, subject string) (*NatsSubscriber, e
 	subscriber, err := js.NewSubscriber(js.SubscriberConfig{
 		URL:                 cfg.NatsURL,
 		Logger:              logger,
-		AckWaitTimeout:      30 * 1000, // 30 seconds
+		AckWaitTimeout:      30 * time.Second, // 30 seconds
 		ResourceInitializer: consumerForSubject(subject),
 	})
 	if err != nil {

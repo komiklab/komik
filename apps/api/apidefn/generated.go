@@ -14,6 +14,7 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/labstack/echo/v5"
+	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
 // AdminCreateRequest defines model for adminCreateRequest.
@@ -33,8 +34,18 @@ type ErrorResponse struct {
 	ErrorMessage *string `json:"error_message,omitempty"`
 }
 
+// UserResponse defines model for userResponse.
+type UserResponse struct {
+	Email *openapi_types.Email `json:"email,omitempty"`
+	Id    *int                 `json:"id,omitempty"`
+	Name  *string              `json:"name,omitempty"`
+}
+
 // PostAdminJSONRequestBody defines body for PostAdmin for application/json ContentType.
 type PostAdminJSONRequestBody = AdminCreateRequest
+
+// PostAuthLoginJSONRequestBody defines body for PostAuthLogin for application/json ContentType.
+type PostAuthLoginJSONRequestBody = AdminCreateRequest
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
@@ -44,6 +55,12 @@ type ServerInterface interface {
 
 	// (POST /admin)
 	PostAdmin(ctx *echo.Context) error
+
+	// (POST /auth/login)
+	PostAuthLogin(ctx *echo.Context) error
+
+	// (POST /auth/logout)
+	PostAuthLogout(ctx *echo.Context) error
 }
 
 // ServerInterfaceWrapper converts echo contexts to parameters.
@@ -66,6 +83,24 @@ func (w *ServerInterfaceWrapper) PostAdmin(ctx *echo.Context) error {
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.PostAdmin(ctx)
+	return err
+}
+
+// PostAuthLogin converts echo context to params.
+func (w *ServerInterfaceWrapper) PostAuthLogin(ctx *echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.PostAuthLogin(ctx)
+	return err
+}
+
+// PostAuthLogout converts echo context to params.
+func (w *ServerInterfaceWrapper) PostAuthLogout(ctx *echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.PostAuthLogout(ctx)
 	return err
 }
 
@@ -118,6 +153,8 @@ func RegisterHandlersWithOptions(router EchoRouter, si ServerInterface, options 
 
 	router.GET(options.BaseURL+"/admin", wrapper.GetAdmin, options.OperationMiddlewares["GetAdmin"]...)
 	router.POST(options.BaseURL+"/admin", wrapper.PostAdmin, options.OperationMiddlewares["PostAdmin"]...)
+	router.POST(options.BaseURL+"/auth/login", wrapper.PostAuthLogin, options.OperationMiddlewares["PostAuthLogin"]...)
+	router.POST(options.BaseURL+"/auth/logout", wrapper.PostAuthLogout, options.OperationMiddlewares["PostAuthLogout"]...)
 
 }
 
@@ -126,14 +163,15 @@ func RegisterHandlersWithOptions(router EchoRouter, si ServerInterface, options 
 // const string: with thousands of chunks the chained `+` fold is several
 // times slower for the Go compiler than parsing a slice literal.
 var swaggerSpec = []string{
-	"zFRNb9swDP0rBrejEadrd9GtK7CiKLAVvQ5BodpMoi4WVZLOVgT+7wNlo16abLvksJMIfj098kk7qKlN",
-	"FDGqgNuB1GtsfTZ904Z4xegV7/G5Q1HzJqaErAFzTvIiP4gbs5fErVdwk7MEfUkIDkQ5xBX0JXSCHH2L",
-	"VvAm2JfA+NwFxgbctymznBouXjvS4xPWah3zNa9R71ESRcHDS+LPIAO7sfiRaIM+HkCOicdQkJn4LxAW",
-	"fqipOUZsrH5oUcSv/kD9DaK5QlxSTg66sdjl3U1xRVHZ1yrFkri4pTZ8hxK2yBIogoOz2dwAKWH0KYCD",
-	"89l8dp5nqOt81SoPzKwV5o0aD6+B4k0DDq5RL3OCjWagm8s+zOd21BQVY67zKW1CnSurJ6E4yces94xL",
-	"cPCumvRVjeKqDlaW6TYoNYekA5Gvt8bjYn5xMtT9FR6B/EJafKYuNob88YR8/4kcoprYN4Ugb5GLXDDI",
-	"wq/EpDksbdGXkEiOrO2O5Le95df6iZqX065s/zPo95+Pcof9gWjO7NgnO3T5n4dsviHJ3DvoeAMO1qpJ",
-	"XFX5FGZDdKYoWm3PoF+8NtnB8L2NzfpF/ysAAP//",
+	"1FVBT9w8EP0r0XzfMdoshV5yo0hFiKpFXKsVMslsYpp4zHhCi1b579U4ESFsoD3sgZ5ijWfm+c17dnZQ",
+	"UOvJoZMA+Q5CUWNr4tKUrXVnjEbwGu87DKJRz+SRxWLM8SaEn8SlrrfErRHIp2AK8ugRcgjC1lXQp9AF",
+	"ZGda1IIXm30KjPedZSwh/z5lplPDzVNHur3DQrRjPOY5yjUGTy7g/iHxlw0Du7H4lqhB4/Ygx8QlFGQm",
+	"fgNCt28KKpeIjdU3LYZgqleo7yEq/zcAW2Ob2dSHyMLIbfkM0TrBClnjr8vw4iwasm5LMdlKo3unVxfJ",
+	"GTlhU0hItsTJJbX2B6TwgBwsOcjhaLVWHPLojLeQw/FqvTqOekodWWRRPF1VGN2lFI1Ychcl5HCOchoT",
+	"VKZhErHsw3qtn4KcoIt1xvvGFrEyuwvkJivr6n/GLeTwXzZ5PRuNnu3ZJ9ItMRRsvQxEvl0qj5P1ycFQ",
+	"53ZagPxKknymzpWK/PGAfP+IrA5hZ5okID8gJ7FgsIWpgl6TQbRNn4KnsCDbFYVnusWX4xOVj4eVbP4w",
+	"9fOrLNxhv2eaI/3MyQ5d3vOQ+xQy00mdNVQNV+WNoXdSf4lp72vwhxvs7FF89aa+Nyk7qV8oSZ38lZSa",
+	"tzzOf4h3n8KQo9EddNxADrWID3mWGW9Xw+5KMEj2cAT95qnHbvxLjdehT6eANu83/e8AAAD//w==",
 }
 
 // decodeSpec returns the embedded OpenAPI spec as raw JSON bytes,

@@ -26,13 +26,180 @@ import type {
 import type {
   AdminCreateRequest,
   AdminGetResponse,
-  ErrorResponse
+  ErrorResponse,
+  UserResponse
 } from './schemas';
 
 import { customInstance } from './httpClient';
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
+
+export type postAuthLoginResponse200 = {
+  data: UserResponse
+  status: 200
+}
+
+export type postAuthLoginResponse500 = {
+  data: ErrorResponse
+  status: 500
+}
+
+export type postAuthLoginResponseSuccess = (postAuthLoginResponse200) & {
+  headers: Headers;
+};
+export type postAuthLoginResponseError = (postAuthLoginResponse500) & {
+  headers: Headers;
+};
+
+export type postAuthLoginResponse = (postAuthLoginResponseSuccess | postAuthLoginResponseError)
+
+export const getPostAuthLoginUrl = () => {
+
+
+
+
+  return `http://localhost:65080/api/v1/auth/login`
+}
+
+export const postAuthLogin = async (adminCreateRequest: AdminCreateRequest, options?: RequestInit): Promise<postAuthLoginResponse> => {
+
+  return customInstance<postAuthLoginResponse>(getPostAuthLoginUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(adminCreateRequest)
+  }
+);}
+
+
+
+
+export const getPostAuthLoginMutationOptions = <TError = ErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAuthLogin>>, TError,{data: AdminCreateRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof postAuthLogin>>, TError,{data: AdminCreateRequest}, TContext> => {
+
+const mutationKey = ['postAuthLogin'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAuthLogin>>, {data: AdminCreateRequest}> = (props) => {
+          const {data} = props ?? {};
+
+          return  postAuthLogin(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostAuthLoginMutationResult = NonNullable<Awaited<ReturnType<typeof postAuthLogin>>>
+    export type PostAuthLoginMutationBody = AdminCreateRequest
+    export type PostAuthLoginMutationError = ErrorResponse
+
+    export const usePostAuthLogin = <TError = ErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAuthLogin>>, TError,{data: AdminCreateRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postAuthLogin>>,
+        TError,
+        {data: AdminCreateRequest},
+        TContext
+      > => {
+      return useMutation(getPostAuthLoginMutationOptions(options), queryClient);
+    }
+
+export type postAuthLogoutResponse200 = {
+  data: void
+  status: 200
+}
+
+export type postAuthLogoutResponse500 = {
+  data: ErrorResponse
+  status: 500
+}
+
+export type postAuthLogoutResponseSuccess = (postAuthLogoutResponse200) & {
+  headers: Headers;
+};
+export type postAuthLogoutResponseError = (postAuthLogoutResponse500) & {
+  headers: Headers;
+};
+
+export type postAuthLogoutResponse = (postAuthLogoutResponseSuccess | postAuthLogoutResponseError)
+
+export const getPostAuthLogoutUrl = () => {
+
+
+
+
+  return `http://localhost:65080/api/v1/auth/logout`
+}
+
+export const postAuthLogout = async ( options?: RequestInit): Promise<postAuthLogoutResponse> => {
+
+  return customInstance<postAuthLogoutResponse>(getPostAuthLogoutUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getPostAuthLogoutMutationOptions = <TError = ErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAuthLogout>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof postAuthLogout>>, TError,void, TContext> => {
+
+const mutationKey = ['postAuthLogout'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAuthLogout>>, void> = () => {
+
+
+          return  postAuthLogout(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostAuthLogoutMutationResult = NonNullable<Awaited<ReturnType<typeof postAuthLogout>>>
+
+    export type PostAuthLogoutMutationError = ErrorResponse
+
+    export const usePostAuthLogout = <TError = ErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAuthLogout>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postAuthLogout>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getPostAuthLogoutMutationOptions(options), queryClient);
+    }
 
 export type getAdminResponse200 = {
   data: AdminGetResponse

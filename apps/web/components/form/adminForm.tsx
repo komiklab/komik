@@ -5,45 +5,49 @@ import {
   Paper,
   Title,
   Container,
+  Text,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 
 interface AdminFormProps {
   onSubmit: (values: AdminFormValues) => void;
   submitLabel: string;
+  error?: string | null;
+  loading?: boolean;
 }
 
 export type AdminFormValues = {
-  email: string;
+  username: string;
   password: string;
 };
 
-export default function AdminForm({ onSubmit, submitLabel }: AdminFormProps) {
+export default function AdminForm({ onSubmit, submitLabel, error, loading }: AdminFormProps) {
   const form = useForm({
     mode: "uncontrolled",
     initialValues: {
-      email: "",
+      username: "",
       password: "",
     },
     validate: {
-      email: (value) => (/^\S+@\S+$/.test(value) ? null : "Invalid email"),
+      username: (value) => (value.length > 0 ? null : "Username is required"),
       password: (value) =>
         value.length < 6 ? "Password must be at least 6 characters" : null,
     },
   });
 
   return (
-    <Container size={420} my={40}>
-      <Title ta="center" order={2}>
-        Create Administrator
-      </Title>
-      <Paper withBorder shadow="md" p={30} mt={30} radius="md">
+
         <form onSubmit={form.onSubmit(onSubmit)}>
+          {error && (
+            <Text c="red" size="sm" mb="sm" fw={500}>
+              {error}
+            </Text>
+          )}
           <TextInput
-            label="Email"
-            placeholder="you@mantine.dev"
-            key={form.key("email")}
-            {...form.getInputProps("email")}
+            label="Username"
+            placeholder="Your username"
+            key={form.key("username")}
+            {...form.getInputProps("username")}
             required
           />
           <PasswordInput
@@ -54,11 +58,10 @@ export default function AdminForm({ onSubmit, submitLabel }: AdminFormProps) {
             {...form.getInputProps("password")}
             required
           />
-          <Button fullWidth mt="xl" type="submit" >
+          <Button fullWidth mt="xl" type="submit" loading={loading}>
             {submitLabel}
           </Button>
         </form>
-      </Paper>
-    </Container>
+
   );
 }

@@ -8,3 +8,4 @@
 export * from './adminCreateRequest';
 export * from './adminGetResponse';
 export * from './errorResponse';
+export * from './userResponse';

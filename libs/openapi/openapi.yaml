@@ -6,8 +6,45 @@ servers:
   - url: https://api.server.test/v1
 tags:
   - name: admin
+  - name: auth
 
 paths:
+  /auth/login:
+    post:
+      tags:
+        - auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/adminCreateRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/userResponse"
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+  /auth/logout:
+    post:
+      tags:
+        - auth
+      responses:
+        "200":
+          description: OK
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/errorResponse"
   /admin:
     get:
       tags:
@@ -52,6 +89,16 @@ paths:
 
 components:
   schemas:
+    userResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+          format: email
+        name:
+          type: string
     errorResponse:
       type: object
       properties:

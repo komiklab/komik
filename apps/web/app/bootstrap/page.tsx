@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import AdminForm from "../../components/form/adminForm";
 import type { AdminFormValues } from "../../components/form/adminForm";
 import { useGetAdmin, usePostAdmin } from "../../api/komik";
+import { Paper, Title, Container } from "@mantine/core";
 
 export default function Bootstrap() {
   const router = useRouter();
@@ -11,12 +12,9 @@ export default function Bootstrap() {
     data: adminData,
     isLoading: isCheckingAdmin,
     isError: isAdminCheckError,
-    error
+    error,
   } = useGetAdmin();
-  const {
-    mutate: createAdmin,
-    isPending: isCreatingAdmin,
-  } = usePostAdmin({
+  const { mutate: createAdmin, isPending: isCreatingAdmin } = usePostAdmin({
     mutation: {
       onSuccess: () => {
         router.replace("/signin");
@@ -34,7 +32,11 @@ export default function Bootstrap() {
       return;
     }
 
-    if (!isCheckingAdmin && adminData?.status === 200 && adminData.data.exists) {
+    if (
+      !isCheckingAdmin &&
+      adminData?.status === 200 &&
+      adminData.data.exists
+    ) {
       router.replace("/signin");
     }
   }, [adminData, isAdminCheckError, isCheckingAdmin, router]);
@@ -54,9 +56,16 @@ export default function Bootstrap() {
     });
   }
   return (
-    <AdminForm
-      submitLabel={isCreatingAdmin ? "Creating..." : "Create"}
-      onSubmit={(values: AdminFormValues) => createAdminCred(values)}
-    />
+    <Container size={420} my={40}>
+      <Title ta="center" order={2}>
+        Create Administrator
+      </Title>
+      <Paper withBorder shadow="md" p={30} mt={30} radius="md">
+        <AdminForm
+          submitLabel={isCreatingAdmin ? "Creating..." : "Create"}
+          onSubmit={(values: AdminFormValues) => createAdminCred(values)}
+        />
+      </Paper>
+    </Container>
   );
 }

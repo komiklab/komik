@@ -34,8 +34,19 @@ func (a *AdminRepo) CreateAdmin(admin *models.Admin) error {
 	if err != nil {
 		return utils.NewDatabaseError("failed to create admin", err)
 	}
-	if (result.RowsAffected == 0) {
+	if result.RowsAffected == 0 {
 		return utils.NewConflictError("admin already exist", errors.New("admin already exist"))
 	}
 	return nil
+}
+
+func (a *AdminRepo) FetchPassword(admin *models.Admin) (string, error) {
+	result := a.gormdb.Select("password").Where("username = ?", admin.Username).First(&admin)
+	if err := result.Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return "", utils.NewAuthenticationError("admin not found", err)
+		}
+		return "", utils.NewDatabaseError("failed to fetch password", err)
+	}
+	return admin.Password, nil
 }

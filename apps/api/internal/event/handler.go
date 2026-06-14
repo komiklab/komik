@@ -6,6 +6,7 @@ import (
 	"github.com/komiklab/komik/internal/models"
 	"github.com/komiklab/komik/internal/repositories"
 	"github.com/komiklab/komik/internal/utils"
+	"github.com/rs/zerolog/log"
 )
 
 type EventHandler struct {
@@ -20,6 +21,7 @@ func NewEventHandler(dbcon *client.PostgresClient) *EventHandler {
 }
 
 func (h *EventHandler) HandleAuditLog(msg *message.Message) error {
+	log.Info().Msg("Received Audit log handle.")
 	auditlogData := msg.Payload
 	auditlogModel := &models.AuditLog{}
 	err := auditlogModel.Unmarshal(auditlogData)

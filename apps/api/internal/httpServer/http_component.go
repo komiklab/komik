@@ -99,6 +99,10 @@ func (h *HttpComponent) addMiddleware() {
 		AllowCredentials: true,
 	}))
 	h.e.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{
+		Skipper: func(c *echo.Context) bool {
+			// skip the csrf for /webhook path
+			return c.Path() == "/api/v1/hook/slack"
+		},
 		TokenLookup:    "header:X-CSRF-Token",
 		ContextKey:     "csrf",
 		CookieName:     "_csrf",

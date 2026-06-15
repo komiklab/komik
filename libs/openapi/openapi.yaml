@@ -7,8 +7,33 @@ servers:
 tags:
   - name: admin
   - name: auth
+  - name: hook
 
 paths:
+  /hook/slack:
+    post:
+      tags:
+        - hook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: string
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/errorResponse"
   /auth/oidc/login:
     get:
       tags:
@@ -143,6 +168,19 @@ paths:
 
 components:
   schemas:
+    slackEventRequest:
+      type: object
+      required:
+        - type
+        - challenge
+        - token
+      properties:
+        type:
+          type: string
+        challenge:
+          type: string
+        token:
+          type: string
     userResponse:
       type: object
       properties:

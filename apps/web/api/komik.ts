@@ -28,6 +28,7 @@ import type {
   AdminGetResponse,
   ErrorResponse,
   GetAuthOidcCallbackParams,
+  PostHookSlackBody,
   UserResponse
 } from './schemas';
 
@@ -35,6 +36,89 @@ import { customInstance } from './httpClient';
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
+
+export type postHookSlackResponse200 = {
+  data: string
+  status: 200
+}
+
+export type postHookSlackResponse500 = {
+  data: ErrorResponse
+  status: 500
+}
+
+export type postHookSlackResponseSuccess = (postHookSlackResponse200) & {
+  headers: Headers;
+};
+export type postHookSlackResponseError = (postHookSlackResponse500) & {
+  headers: Headers;
+};
+
+export type postHookSlackResponse = (postHookSlackResponseSuccess | postHookSlackResponseError)
+
+export const getPostHookSlackUrl = () => {
+
+
+
+
+  return `http://localhost:65080/api/v1/hook/slack`
+}
+
+export const postHookSlack = async (postHookSlackBody: PostHookSlackBody, options?: RequestInit): Promise<postHookSlackResponse> => {
+
+  return customInstance<postHookSlackResponse>(getPostHookSlackUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(postHookSlackBody)
+  }
+);}
+
+
+
+
+export const getPostHookSlackMutationOptions = <TError = ErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postHookSlack>>, TError,{data: PostHookSlackBody}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof postHookSlack>>, TError,{data: PostHookSlackBody}, TContext> => {
+
+const mutationKey = ['postHookSlack'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postHookSlack>>, {data: PostHookSlackBody}> = (props) => {
+          const {data} = props ?? {};
+
+          return  postHookSlack(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostHookSlackMutationResult = NonNullable<Awaited<ReturnType<typeof postHookSlack>>>
+    export type PostHookSlackMutationBody = PostHookSlackBody
+    export type PostHookSlackMutationError = ErrorResponse
+
+    export const usePostHookSlack = <TError = ErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postHookSlack>>, TError,{data: PostHookSlackBody}, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postHookSlack>>,
+        TError,
+        {data: PostHookSlackBody},
+        TContext
+      > => {
+      return useMutation(getPostHookSlackMutationOptions(options), queryClient);
+    }
 
 export type getAuthOidcLoginResponse302 = {
   data: void

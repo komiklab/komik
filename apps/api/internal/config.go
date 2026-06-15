@@ -14,6 +14,7 @@ type Config struct {
 	RedisDSN            string `valid:"-" env:"REDIS_DSN" envDefault:"redis://localhost:6381"`
 	PostLoginRedirect   string `valid:"-" env:"POST_LOGIN_REDIRECT" envDefault:"http://localhost:3000/"`
 	OauthConfig         OauthConfig
+	SlackIntegration SlackIntegration
 }
 
 type OauthConfig struct {
@@ -23,6 +24,11 @@ type OauthConfig struct {
 	Scopes       string `valid:"-" env:"SCOPES" envDefault:""`
 	AuthURL      string `valid:"-" env:"AUTH_URL" envDefault:""`
 	TokenURL     string `valid:"-" env:"TOKEN_URL" envDefault:""`
+}
+
+type SlackIntegration struct {
+	BotToken string `valid:"-" env:"SLACK_BOT_TOKEN" envDefault:""`
+	SigningSecret string `valid:"-" env:"SLACK_SIGNING_SECRET" envDefault:""`
 }
 
 func NewConfig() *Config {

@@ -48,11 +48,17 @@ type GetAuthOidcCallbackParams struct {
 	State string `form:"state" json:"state"`
 }
 
+// PostHookSlackJSONBody defines parameters for PostHookSlack.
+type PostHookSlackJSONBody map[string]interface{}
+
 // PostAdminJSONRequestBody defines body for PostAdmin for application/json ContentType.
 type PostAdminJSONRequestBody = AdminCreateRequest
 
 // PostAuthLoginJSONRequestBody defines body for PostAuthLogin for application/json ContentType.
 type PostAuthLoginJSONRequestBody = AdminCreateRequest
+
+// PostHookSlackJSONRequestBody defines body for PostHookSlack for application/json ContentType.
+type PostHookSlackJSONRequestBody PostHookSlackJSONBody
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
@@ -77,6 +83,9 @@ type ServerInterface interface {
 
 	// (GET /auth/oidc/login)
 	GetAuthOidcLogin(ctx *echo.Context) error
+
+	// (POST /hook/slack)
+	PostHookSlack(ctx *echo.Context) error
 }
 
 // ServerInterfaceWrapper converts echo contexts to parameters.
@@ -163,6 +172,15 @@ func (w *ServerInterfaceWrapper) GetAuthOidcLogin(ctx *echo.Context) error {
 	return err
 }
 
+// PostHookSlack converts echo context to params.
+func (w *ServerInterfaceWrapper) PostHookSlack(ctx *echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.PostHookSlack(ctx)
+	return err
+}
+
 // This is a simple interface which specifies echo.Route addition functions which
 // are present on both echo.Echo and echo.Group, since we want to allow using
 // either of them for path registration
@@ -217,6 +235,7 @@ func RegisterHandlersWithOptions(router EchoRouter, si ServerInterface, options 
 	router.GET(options.BaseURL+"/auth/me", wrapper.GetAuthMe, options.OperationMiddlewares["GetAuthMe"]...)
 	router.GET(options.BaseURL+"/auth/oidc/callback", wrapper.GetAuthOidcCallback, options.OperationMiddlewares["GetAuthOidcCallback"]...)
 	router.GET(options.BaseURL+"/auth/oidc/login", wrapper.GetAuthOidcLogin, options.OperationMiddlewares["GetAuthOidcLogin"]...)
+	router.POST(options.BaseURL+"/hook/slack", wrapper.PostHookSlack, options.OperationMiddlewares["PostHookSlack"]...)
 
 }
 
@@ -225,17 +244,18 @@ func RegisterHandlersWithOptions(router EchoRouter, si ServerInterface, options 
 // const string: with thousands of chunks the chained `+` fold is several
 // times slower for the Go compiler than parsing a slice literal.
 var swaggerSpec = []string{
-	"3FZdT+M6EP0r1dz7GDXl477kjYu0CMEuiNdVhUwybQyJx9hjdlGV/74au1DStJSVWKnap1j2fPicOTPO",
-	"AkpqLRk07KFYgC9rbFVcqqrV5tShYrzBx4CeZdc6suhYY7Sxyvsf5CpZz8i1iqFYbWbAzxahAM9Omzl0",
-	"GQSPzqgWxWHtsMvA4WPQDisovq8ss1XA6WtEurvHkiVivOYZ8g16S8bj8JL4U/uEbul8R9SgMoOUS8NN",
-	"WdA5cu+kkOPbkqpNwJbety16r+ZboA8yCv7tCXWf8hD0TrpfjbFVuhlaDy8hW9rMKN5YcyNnJ9fno1My",
-	"7FTJfjQjN7qgVj9ABk/ovCYDBRyMJ5KcLBplNRRwNJ6Mj2IhuY7Xz2PVZDXHKCvBpliTOa+ggDPkk2gg",
-	"9UkURLfDyUQ+JRlGE/2UtY0uo2d+78msNCyrfx3OoIB/8pXI86XC84FuItwKfem05QTk6kJwHE+OPy1r",
-	"X0cbUn4jHn2hYCrJ/N8n4t2ZWRsWsTQjj+4J3Sg6JFmouZf+SEWbdhlY8hvKdk3+Td3iyPifqufPLVl/",
-	"InX9HmYXsBuI5kA+fbApyj6T3GWQq8B13tA8tco7pAeuL6PZfhE/GRKfWmrfOA9cr1FOgT/Eudit4T6a",
-	"HA5x721Pr0FPb8XWqRy4/op/ciz3nr2tI3nPSSRdlXmpmuZOlQ+7+LzSVXn6YitvpFMtMjqJvABpfXgM",
-	"6J4hg/SUQ/zPWO++7A3cwcu+OY5nxb8XaPo3ST1W6XW67irRar5+DH8GNaoqlnEBl5RA9/Gus9vtL2dd",
-	"BskmqTK4Bgqoma0v8lxZPU6nY0bP+dMBiFKWMRYvcksvm4jxZUOCd9PuVwAAAP//",
+	"3FZNb9swDP0rAbejEacfu/jWFVhXtFuL7jgEhWozsRpbdCWqWxH4vw+U0ubDSZMNHZDtFEeiSL3HR1JT",
+	"yKluyKBhB9kUXF5ircKnKmptTi0qxht88OhYVhtLDVrWGGwa5dwPsoV8j8jWiiGbLybATw1CBo6tNmNo",
+	"E/AOrVE1yoGVzTYBiw9eWywg+z63TOYOhy8e6e4ecxaP4ZpnyDfoGjIOu5fEn9pFdLPDd0QVKtMJOTNc",
+	"FwWtJftKCNm+zalYB2x2+rZG59R4A/RORMG/OaBeptx7vZXuF2Osla661t1LyJI2Iwo31lzJ3sn1ee+U",
+	"DFuVs+uNyPYuqNYTSOARrdNkIIOD/kCCU4NGNRoyOOoP+kchkVyG66cha/I1xiArwaZYkzkvIIMz5JNg",
+	"IPmJFIRjh4OB/ORkGE04p5qm0nk4md47MnMNy9d7iyPI4F06F3k6U3ja0U2AW6DLrW44Arm6EBzHg+M3",
+	"i7qsozUhvxL3PpE3hUT+8IZ4t0bWhkUsVc+hfUTbCweiLNTYSX3EpA3bBBpya9J2TW4hb6FlfKTi6W1T",
+	"ttyR2uUaZuux7YjmQH6WwUYv+0xym0CqPJdpReNYKq+Q7rm8DGb7RfygS3wsqX3j3HO5Qjl53olzsVvB",
+	"fTQ47OLe25pegR5nxcau7Ln8gn+zLS+NvY0tec9JJF3kaa6q6k7lk218XukiP322lRlpVY2MVjxPQUof",
+	"HjzaJ0ggjnII74zV6ksW4HYm+3o/jhX/nqPh/yT1kKWX7rotRfP+uhv+BEpURUjjFC4pgl7Gu8puu9ec",
+	"lUST1FUzRW9ujJ+JJt+qKOY/HUaqKLRsqep64dkb1bnmkbrTHNo5eCct/0QPkvRIptoEok3sH95WkEHJ",
+	"3LgsTVWj+3G3z+g4fTwAqemZj+lzY4hvEGkbzwsig4X/IVg7bH8FAAD//w==",
 }
 
 // decodeSpec returns the embedded OpenAPI spec as raw JSON bytes,

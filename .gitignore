@@ -1,3 +1,5 @@
 apps/api/tmp/
 infra/helm/komik/charts/
 infra/helm/komik/templates/*.yaml1
+mocks
+apps/api/.env.development

@@ -1,20 +1,29 @@
 "use client";
-import { useState } from 'react';
-import { Anchor, Button, Center, Divider, Stack, Text } from '@mantine/core';
-import { IconShieldCheck } from '@tabler/icons-react';
-import { AuthCard } from '../../components/layout/authCard';
-import { AdminPanel } from './AdminPanel';
+import { useState } from "react";
+import { Anchor, Button, Center, Divider, Stack, Text } from "@mantine/core";
+import { IconShieldCheck } from "@tabler/icons-react";
+import { AuthCard } from "../../components/layout/authCard";
+import { AdminPanel } from "./AdminPanel";
 // import { AdminFormValues } from '../../components/form/AdminLoginForm';
 // import { AdminPanel } from './AdminPanel';
+import { getGetAuthOidcLoginUrl } from "../../api/komik";
+import { useEffect } from "react";
 
-type View = 'oidc' | 'admin';
+type View = "oidc" | "admin";
 
 export function SignInPage() {
-  const [view, setView] = useState<View>('oidc');
+  const [view, setView] = useState<View>("oidc");
   const [adminLoading, setAdminLoading] = useState(false);
+  const [isOidcLoading, setIsOidcLoading] = useState(false);
+
+  function RedirectOIDC() {
+    setIsOidcLoading(true);
+    window.location.href = getGetAuthOidcLoginUrl();
+  }
+
   return (
     <AuthCard appName="Komik">
-      {view === 'oidc' ? (
+      {view === "oidc" ? (
         <Stack gap="lg">
           <Stack gap={4}>
             <Text fw={500} fz={20} c="dark">
@@ -29,8 +38,9 @@ export function SignInPage() {
             fullWidth
             variant="default"
             size="md"
+            loading={isOidcLoading}
             leftSection={<IconShieldCheck size={18} />}
-            onClick={() => (window.location.href = '/api/auth/oidc')}
+            onClick={() => RedirectOIDC()}
           >
             Log in with OIDC provider
           </Button>
@@ -43,7 +53,7 @@ export function SignInPage() {
               fz="sm"
               c="dimmed"
               underline="always"
-              onClick={() => setView('admin')}
+              onClick={() => setView("admin")}
               style={{ textUnderlineOffset: 3 }}
             >
               Use admin login
@@ -51,10 +61,7 @@ export function SignInPage() {
           </Center>
         </Stack>
       ) : (
-        <AdminPanel
-          onBack={() => setView('oidc')}
-          loading={adminLoading}
-        />
+        <AdminPanel onBack={() => setView("oidc")} loading={adminLoading} />
       )}
     </AuthCard>
   );

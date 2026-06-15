@@ -15,7 +15,6 @@ type HttpHandler struct {
 }
 
 
-
 func NewHttpHandler(cfg *internal.Config, dbclient *client.PostgresClient, publisher *event.Publisher, cache *client.RedisClient) *HttpHandler {
 	return &HttpHandler{
 		cfg:       cfg,

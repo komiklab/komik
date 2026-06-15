@@ -18,3 +18,4 @@ func IsErrNotNil(err error) bool {
 	}
 	return false
 }
+

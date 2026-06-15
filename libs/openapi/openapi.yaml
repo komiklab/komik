@@ -9,6 +9,47 @@ tags:
   - name: auth
 
 paths:
+  /auth/oidc/login:
+    get:
+      tags:
+        - auth
+      responses:
+        "302":
+          description: Found
+          headers:
+            Location:
+              schema:
+                type: string
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+  /auth/oidc/callback:
+    get:
+      tags:
+        - auth
+      parameters:
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: state
+          in: query
+          required: true
+          schema:
+            type: string  
+      responses:
+        "302":
+          description: Found
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/errorResponse"  
   /auth/login:
     post:
       tags:
@@ -20,8 +61,8 @@ paths:
             schema:
               $ref: "#/components/schemas/adminCreateRequest"
       responses:
-        "302":
-          description: Found
+        "200":
+          description: OK
         "500":
           description: internal server error
           content:

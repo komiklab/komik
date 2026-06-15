@@ -27,6 +27,7 @@ import type {
   AdminCreateRequest,
   AdminGetResponse,
   ErrorResponse,
+  GetAuthOidcCallbackParams,
   UserResponse
 } from './schemas';
 
@@ -35,9 +36,240 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
 
-export type postAuthLoginResponse302 = {
+export type getAuthOidcLoginResponse302 = {
   data: void
   status: 302
+}
+
+export type getAuthOidcLoginResponse500 = {
+  data: ErrorResponse
+  status: 500
+}
+
+;
+export type getAuthOidcLoginResponseError = (getAuthOidcLoginResponse302 | getAuthOidcLoginResponse500) & {
+  headers: Headers;
+};
+
+export type getAuthOidcLoginResponse = (getAuthOidcLoginResponseError)
+
+export const getGetAuthOidcLoginUrl = () => {
+
+
+
+
+  return `http://localhost:65080/api/v1/auth/oidc/login`
+}
+
+export const getAuthOidcLogin = async ( options?: RequestInit): Promise<getAuthOidcLoginResponse> => {
+
+  return customInstance<getAuthOidcLoginResponse>(getGetAuthOidcLoginUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAuthOidcLoginQueryKey = () => {
+    return [
+    `http://localhost:65080/api/v1/auth/oidc/login`
+    ] as const;
+    }
+
+
+export const getGetAuthOidcLoginQueryOptions = <TData = Awaited<ReturnType<typeof getAuthOidcLogin>>, TError = void | ErrorResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthOidcLogin>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAuthOidcLoginQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAuthOidcLogin>>> = ({ signal }) => getAuthOidcLogin({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAuthOidcLogin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAuthOidcLoginQueryResult = NonNullable<Awaited<ReturnType<typeof getAuthOidcLogin>>>
+export type GetAuthOidcLoginQueryError = void | ErrorResponse
+
+
+export function useGetAuthOidcLogin<TData = Awaited<ReturnType<typeof getAuthOidcLogin>>, TError = void | ErrorResponse>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthOidcLogin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAuthOidcLogin>>,
+          TError,
+          Awaited<ReturnType<typeof getAuthOidcLogin>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAuthOidcLogin<TData = Awaited<ReturnType<typeof getAuthOidcLogin>>, TError = void | ErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthOidcLogin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAuthOidcLogin>>,
+          TError,
+          Awaited<ReturnType<typeof getAuthOidcLogin>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAuthOidcLogin<TData = Awaited<ReturnType<typeof getAuthOidcLogin>>, TError = void | ErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthOidcLogin>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetAuthOidcLogin<TData = Awaited<ReturnType<typeof getAuthOidcLogin>>, TError = void | ErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthOidcLogin>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAuthOidcLoginQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export type getAuthOidcCallbackResponse302 = {
+  data: void
+  status: 302
+}
+
+export type getAuthOidcCallbackResponse500 = {
+  data: ErrorResponse
+  status: 500
+}
+
+;
+export type getAuthOidcCallbackResponseError = (getAuthOidcCallbackResponse302 | getAuthOidcCallbackResponse500) & {
+  headers: Headers;
+};
+
+export type getAuthOidcCallbackResponse = (getAuthOidcCallbackResponseError)
+
+export const getGetAuthOidcCallbackUrl = (params: GetAuthOidcCallbackParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `http://localhost:65080/api/v1/auth/oidc/callback?${stringifiedParams}` : `http://localhost:65080/api/v1/auth/oidc/callback`
+}
+
+export const getAuthOidcCallback = async (params: GetAuthOidcCallbackParams, options?: RequestInit): Promise<getAuthOidcCallbackResponse> => {
+
+  return customInstance<getAuthOidcCallbackResponse>(getGetAuthOidcCallbackUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAuthOidcCallbackQueryKey = (params?: GetAuthOidcCallbackParams,) => {
+    return [
+    `http://localhost:65080/api/v1/auth/oidc/callback`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetAuthOidcCallbackQueryOptions = <TData = Awaited<ReturnType<typeof getAuthOidcCallback>>, TError = void | ErrorResponse>(params: GetAuthOidcCallbackParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthOidcCallback>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAuthOidcCallbackQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAuthOidcCallback>>> = ({ signal }) => getAuthOidcCallback(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAuthOidcCallback>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAuthOidcCallbackQueryResult = NonNullable<Awaited<ReturnType<typeof getAuthOidcCallback>>>
+export type GetAuthOidcCallbackQueryError = void | ErrorResponse
+
+
+export function useGetAuthOidcCallback<TData = Awaited<ReturnType<typeof getAuthOidcCallback>>, TError = void | ErrorResponse>(
+ params: GetAuthOidcCallbackParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthOidcCallback>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAuthOidcCallback>>,
+          TError,
+          Awaited<ReturnType<typeof getAuthOidcCallback>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAuthOidcCallback<TData = Awaited<ReturnType<typeof getAuthOidcCallback>>, TError = void | ErrorResponse>(
+ params: GetAuthOidcCallbackParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthOidcCallback>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAuthOidcCallback>>,
+          TError,
+          Awaited<ReturnType<typeof getAuthOidcCallback>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAuthOidcCallback<TData = Awaited<ReturnType<typeof getAuthOidcCallback>>, TError = void | ErrorResponse>(
+ params: GetAuthOidcCallbackParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthOidcCallback>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetAuthOidcCallback<TData = Awaited<ReturnType<typeof getAuthOidcCallback>>, TError = void | ErrorResponse>(
+ params: GetAuthOidcCallbackParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthOidcCallback>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAuthOidcCallbackQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export type postAuthLoginResponse200 = {
+  data: void
+  status: 200
 }
 
 export type postAuthLoginResponse500 = {
@@ -45,12 +277,14 @@ export type postAuthLoginResponse500 = {
   status: 500
 }
 
-;
-export type postAuthLoginResponseError = (postAuthLoginResponse302 | postAuthLoginResponse500) & {
+export type postAuthLoginResponseSuccess = (postAuthLoginResponse200) & {
+  headers: Headers;
+};
+export type postAuthLoginResponseError = (postAuthLoginResponse500) & {
   headers: Headers;
 };
 
-export type postAuthLoginResponse = (postAuthLoginResponseError)
+export type postAuthLoginResponse = (postAuthLoginResponseSuccess | postAuthLoginResponseError)
 
 export const getPostAuthLoginUrl = () => {
 
@@ -74,7 +308,7 @@ export const postAuthLogin = async (adminCreateRequest: AdminCreateRequest, opti
 
 
 
-export const getPostAuthLoginMutationOptions = <TError = void | ErrorResponse,
+export const getPostAuthLoginMutationOptions = <TError = ErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAuthLogin>>, TError,{data: AdminCreateRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
 ): UseMutationOptions<Awaited<ReturnType<typeof postAuthLogin>>, TError,{data: AdminCreateRequest}, TContext> => {
 
@@ -103,9 +337,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type PostAuthLoginMutationResult = NonNullable<Awaited<ReturnType<typeof postAuthLogin>>>
     export type PostAuthLoginMutationBody = AdminCreateRequest
-    export type PostAuthLoginMutationError = void | ErrorResponse
+    export type PostAuthLoginMutationError = ErrorResponse
 
-    export const usePostAuthLogin = <TError = void | ErrorResponse,
+    export const usePostAuthLogin = <TError = ErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAuthLogin>>, TError,{data: AdminCreateRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof postAuthLogin>>,

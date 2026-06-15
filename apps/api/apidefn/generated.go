@@ -8,12 +8,14 @@ import (
 	"compress/flate"
 	"encoding/base64"
 	"fmt"
+	"net/http"
 	"net/url"
 	"path"
 	"strings"
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/labstack/echo/v5"
+	"github.com/oapi-codegen/runtime"
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
@@ -40,6 +42,12 @@ type UserResponse struct {
 	Username *openapi_types.Email `json:"username,omitempty"`
 }
 
+// GetAuthOidcCallbackParams defines parameters for GetAuthOidcCallback.
+type GetAuthOidcCallbackParams struct {
+	Code  string `form:"code" json:"code"`
+	State string `form:"state" json:"state"`
+}
+
 // PostAdminJSONRequestBody defines body for PostAdmin for application/json ContentType.
 type PostAdminJSONRequestBody = AdminCreateRequest
 
@@ -63,6 +71,12 @@ type ServerInterface interface {
 
 	// (GET /auth/me)
 	GetAuthMe(ctx *echo.Context) error
+
+	// (GET /auth/oidc/callback)
+	GetAuthOidcCallback(ctx *echo.Context, params GetAuthOidcCallbackParams) error
+
+	// (GET /auth/oidc/login)
+	GetAuthOidcLogin(ctx *echo.Context) error
 }
 
 // ServerInterfaceWrapper converts echo contexts to parameters.
@@ -112,6 +126,40 @@ func (w *ServerInterfaceWrapper) GetAuthMe(ctx *echo.Context) error {
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.GetAuthMe(ctx)
+	return err
+}
+
+// GetAuthOidcCallback converts echo context to params.
+func (w *ServerInterfaceWrapper) GetAuthOidcCallback(ctx *echo.Context) error {
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetAuthOidcCallbackParams
+	// ------------- Required query parameter "code" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, true, "code", ctx.QueryParams(), &params.Code, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter code: %s", err))
+	}
+
+	// ------------- Required query parameter "state" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, true, "state", ctx.QueryParams(), &params.State, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter state: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetAuthOidcCallback(ctx, params)
+	return err
+}
+
+// GetAuthOidcLogin converts echo context to params.
+func (w *ServerInterfaceWrapper) GetAuthOidcLogin(ctx *echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetAuthOidcLogin(ctx)
 	return err
 }
 
@@ -167,6 +215,8 @@ func RegisterHandlersWithOptions(router EchoRouter, si ServerInterface, options 
 	router.POST(options.BaseURL+"/auth/login", wrapper.PostAuthLogin, options.OperationMiddlewares["PostAuthLogin"]...)
 	router.POST(options.BaseURL+"/auth/logout", wrapper.PostAuthLogout, options.OperationMiddlewares["PostAuthLogout"]...)
 	router.GET(options.BaseURL+"/auth/me", wrapper.GetAuthMe, options.OperationMiddlewares["GetAuthMe"]...)
+	router.GET(options.BaseURL+"/auth/oidc/callback", wrapper.GetAuthOidcCallback, options.OperationMiddlewares["GetAuthOidcCallback"]...)
+	router.GET(options.BaseURL+"/auth/oidc/login", wrapper.GetAuthOidcLogin, options.OperationMiddlewares["GetAuthOidcLogin"]...)
 
 }
 
@@ -175,16 +225,17 @@ func RegisterHandlersWithOptions(router EchoRouter, si ServerInterface, options 
 // const string: with thousands of chunks the chained `+` fold is several
 // times slower for the Go compiler than parsing a slice literal.
 var swaggerSpec = []string{
-	"3FVNb9swDP0rBrejEbsfu/jWFVhRdB9Fr0NQqDYTq7NFVaKyFYH/+0A5iOc6aXfIgGAnCxLJp/f4TK2h",
-	"pNaSQcMeijX4ssZWxaWqWm0uHSrGO3wK6Fl2rSOLjjXGGKu8/0mukvWCXKsYimEzBX62CAV4dtosoUsh",
-	"eHRGtSgJLw67FBw+Be2wguL7EJkOBefbivTwiCVLxXjNK+Q79JaMx+kl8Zf2PbtN8gNRg8pMIDeBu1DQ",
-	"OXKvQMjxfUnVLmKb7PsWvVfLPdQniMJ/P6AeSx6CflPubTC2SjfT6OklZEubBcUba27k7OL2Orkkw06V",
-	"7JMFueSGWv0DUlih85oMFHAyywWcLBplNRRwNstnZ7GRXMfrZ7FrslpitJVwU6zJXFdQwBXyRQyQ/vQS",
-	"xLTTPJdPSYbRxDxlbaPLmJk9ejKDh2X13uECCniXDSbPNg7PJr6JdCv0pdOWeyLfboTHeX5+MNSxj3ZA",
-	"fiVOPlEwlSB/OCDfN5G1YTFLk3h0K3RJTOhtoZZe/o++afMuBUt+R9tuyf/RtzgyPlL1fNiWjSdSN/6H",
-	"2QXsJqY5kc+YbF/lmEXuUshU4DpraNn/Kq+IHrj+HMOOSfiz/HQq/NF6O3D9QnUK/FeyS9z/RL1/LvYO",
-	"5sD1F/yXk3n08u2dykcqYpdCHyO7awiugQJqZuuLLFNWz/rTGaPnbHUC3XxbYw39U70ZAV06bEjxbt79",
-	"DgAA//8=",
+	"3FZdT+M6EP0r1dz7GDXl477kjYu0CMEuiNdVhUwybQyJx9hjdlGV/74au1DStJSVWKnap1j2fPicOTPO",
+	"AkpqLRk07KFYgC9rbFVcqqrV5tShYrzBx4CeZdc6suhYY7Sxyvsf5CpZz8i1iqFYbWbAzxahAM9Omzl0",
+	"GQSPzqgWxWHtsMvA4WPQDisovq8ss1XA6WtEurvHkiVivOYZ8g16S8bj8JL4U/uEbul8R9SgMoOUS8NN",
+	"WdA5cu+kkOPbkqpNwJbety16r+ZboA8yCv7tCXWf8hD0TrpfjbFVuhlaDy8hW9rMKN5YcyNnJ9fno1My",
+	"7FTJfjQjN7qgVj9ABk/ovCYDBRyMJ5KcLBplNRRwNJ6Mj2IhuY7Xz2PVZDXHKCvBpliTOa+ggDPkk2gg",
+	"9UkURLfDyUQ+JRlGE/2UtY0uo2d+78msNCyrfx3OoIB/8pXI86XC84FuItwKfem05QTk6kJwHE+OPy1r",
+	"X0cbUn4jHn2hYCrJ/N8n4t2ZWRsWsTQjj+4J3Sg6JFmouZf+SEWbdhlY8hvKdk3+Td3iyPifqufPLVl/",
+	"InX9HmYXsBuI5kA+fbApyj6T3GWQq8B13tA8tco7pAeuL6PZfhE/GRKfWmrfOA9cr1FOgT/Eudit4T6a",
+	"HA5x721Pr0FPb8XWqRy4/op/ciz3nr2tI3nPSSRdlXmpmuZOlQ+7+LzSVXn6YitvpFMtMjqJvABpfXgM",
+	"6J4hg/SUQ/zPWO++7A3cwcu+OY5nxb8XaPo3ST1W6XW67irRar5+DH8GNaoqlnEBl5RA9/Gus9vtL2dd",
+	"BskmqTK4Bgqoma0v8lxZPU6nY0bP+dMBiFKWMRYvcksvm4jxZUOCd9PuVwAAAP//",
 }
 
 // decodeSpec returns the embedded OpenAPI spec as raw JSON bytes,

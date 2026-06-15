@@ -1,17 +1,28 @@
 package internal
 
 import (
+	"github.com/asaskevich/govalidator/v12"
 	"github.com/caarlos0/env/v11"
 	"github.com/rs/zerolog/log"
 )
 
 type Config struct {
-	IsDebugLoggerConfig bool   `env:"IS_DEBUG_LOGGER_CONFIG" envDefault:"true"`
-	PostgresDSN         string `env:"POSTGRES_DSN" envDefault:"postgres://komik:komik@localhost:5434/komik?sslmode=disable"`
-	CORSSupport         string `env:"CORS_SUPPORT" envDefault:"http://localhost:3000"`
-	NatsURL             string `env:"NATS_URL" envDefault:"nats://localhost:4222"`
-	RedisDSN            string `env:"REDIS_DSN" envDefault:"redis://localhost:6381"`
-	PostLoginRedirect   string `env:"POST_LOGIN_REDIRECT" envDefault:"http://localhost:3000/"`
+	IsDebugLoggerConfig bool   `valid:"-" env:"IS_DEBUG_LOGGER_CONFIG" envDefault:"true"`
+	PostgresDSN         string `valid:"-" env:"POSTGRES_DSN" envDefault:"postgres://komik:komik@localhost:5434/komik?sslmode=disable"`
+	CORSSupport         string `valid:"-" env:"CORS_SUPPORT" envDefault:"http://localhost:3000"`
+	NatsURL             string `valid:"-" env:"NATS_URL" envDefault:"nats://localhost:4222"`
+	RedisDSN            string `valid:"-" env:"REDIS_DSN" envDefault:"redis://localhost:6381"`
+	PostLoginRedirect   string `valid:"-" env:"POST_LOGIN_REDIRECT" envDefault:"http://localhost:3000/"`
+	OauthConfig         OauthConfig
+}
+
+type OauthConfig struct {
+	ClientID     string `valid:"required" env:"CLIENT_ID"`
+	ClientSecret string `valid:"required" env:"CLIENT_SECRET"`
+	RedirectURL  string `valid:"-" env:"REDIRECT_URL"`
+	Scopes       string `valid:"-" env:"SCOPES" envDefault:""`
+	AuthURL      string `valid:"-" env:"AUTH_URL" envDefault:""`
+	TokenURL     string `valid:"-" env:"TOKEN_URL" envDefault:""`
 }
 
 func NewConfig() *Config {
@@ -19,5 +30,10 @@ func NewConfig() *Config {
 	if err := env.Parse(cfg); err != nil {
 		log.Fatal().Err(err).Msg("Failed to parse config")
 	}
-	return cfg
+
+	if _, err := govalidator.ValidateStruct(cfg); err != nil {
+		log.Fatal().Err(err).Msg("Failed to validate config")
+	}
+
+	return cfg	
 }

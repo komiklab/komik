@@ -8,4 +8,5 @@
 export * from './adminCreateRequest';
 export * from './adminGetResponse';
 export * from './errorResponse';
+export * from './getAuthOidcCallbackParams';
 export * from './userResponse';

@@ -37,7 +37,7 @@ export default function Bootstrap() {
       adminData?.status === 200 &&
       adminData.data.exists
     ) {
-      router.replace("/signin");
+      router.replace("/");
     }
   }, [adminData, isAdminCheckError, isCheckingAdmin, router]);
 
@@ -50,7 +50,7 @@ export default function Bootstrap() {
   function createAdminCred(values: AdminFormValues) {
     createAdmin({
       data: {
-        username: values.email,
+        username: values.username,
         password: values.password,
       },
     });

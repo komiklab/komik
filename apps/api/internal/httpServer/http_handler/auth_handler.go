@@ -1,13 +1,21 @@
 package httphandler
 
 import (
+	"crypto/rand"
 	"encoding/json"
 	"errors"
 	"net/http"
+	"time"
 
+	"github.com/komiklab/komik/apidefn"
+	"github.com/komiklab/komik/internal/auth"
 	"github.com/komiklab/komik/internal/models"
 	"github.com/komiklab/komik/internal/utils"
 	"github.com/labstack/echo/v5"
+	"golang.org/x/oauth2"
+	"strings"
+	// "github.com/coreos/go-oidc/v3/oidc"
+	// "net/url"
 )
 
 // GetAuthMe implements [apidefn.ServerInterface].
@@ -30,4 +38,79 @@ func (h *HttpHandler) GetAuthMe(ctx *echo.Context) error {
 	}
 
 	return ctx.JSON(http.StatusOK, userRep)
+}
+
+// GetAuthOidcCallback implements [apidefn.ServerInterface].
+func (h *HttpHandler) GetAuthOidcCallback(ctx *echo.Context, params apidefn.GetAuthOidcCallbackParams) error {
+	authsrv := auth.NewAuthService(h.dbclient, h.cache)
+	user, err := authsrv.FetchUser(ctx, params, h.cfg)
+	if utils.IsErrNotNil(err) {
+		komikErr, ok := err.(*utils.KomikError)
+		if !ok {
+			komikErr = utils.NewGeneralError(err)
+		}
+		return ctx.JSON(int(komikErr.StatusCode), komikErr)
+	}
+	sessionID, err := authsrv.CreateSession(*user)
+	if utils.IsErrNotNil(err) {
+		komikErr, ok := err.(*utils.KomikError)
+		if !ok {
+			komikErr = utils.NewGeneralError(err)
+		}
+		return ctx.JSON(int(komikErr.StatusCode), komikErr)
+	}
+	// lets set http cookie
+	sessionTTL := utils.SESSION_TTL
+	sessionCookie := http.Cookie{
+		Name:     utils.SESSION_COOKIE_NAME,
+		Value:    sessionID,
+		Path:     "/",
+		MaxAge:   int(sessionTTL.Seconds()),
+		HttpOnly: true,
+		Secure:   ctx.Request().TLS != nil,
+		SameSite: http.SameSiteLaxMode,
+	}
+	http.SetCookie(ctx.Response(), &sessionCookie)
+	return ctx.Redirect(http.StatusFound, h.cfg.PostLoginRedirect)
+}
+
+// GetAuthOidcLogin implements [apidefn.ServerInterface].
+func (h *HttpHandler) GetAuthOidcLogin(ctx *echo.Context) error {
+	oauthConfig := &oauth2.Config{
+		ClientID:     h.cfg.OauthConfig.ClientID,
+		ClientSecret: h.cfg.OauthConfig.ClientSecret,
+		RedirectURL:  h.cfg.OauthConfig.RedirectURL,
+		Scopes:       strings.Split(h.cfg.OauthConfig.Scopes, " "),
+		Endpoint: oauth2.Endpoint{
+			AuthURL:  h.cfg.OauthConfig.AuthURL,
+			TokenURL: h.cfg.OauthConfig.TokenURL,
+		},
+	}
+	state := rand.Text()
+	// create state cookie
+	setCallBackCookie(ctx, "state", state)
+	nonce := rand.Text()
+	setCallBackCookie(ctx, "nonce", nonce)
+	verifier := oauth2.GenerateVerifier()
+	setCallBackCookie(ctx, "code_verifier", verifier)
+	redirectURL := oauthConfig.AuthCodeURL(
+		state,
+		oauth2.SetAuthURLParam("nonce", nonce),
+		oauth2.S256ChallengeOption(verifier),
+	)
+	return ctx.Redirect(http.StatusTemporaryRedirect, redirectURL)
+}
+
+func setCallBackCookie(ctx *echo.Context, name string, value string) error {
+	cookie := &http.Cookie{
+		Name:     name,
+		Value:    value,
+		Path:     "/",
+		Expires:  time.Now().Add(10 * time.Minute),
+		HttpOnly: true,
+		Secure:   ctx.Request().TLS != nil,
+		SameSite: http.SameSiteLaxMode,
+	}
+	http.SetCookie(ctx.Response(), cookie)
+	return nil
 }

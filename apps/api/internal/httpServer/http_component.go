@@ -42,7 +42,8 @@ func (h *HttpComponent) Init() {
 	apidefn.RegisterHandlersWithOptions(h.e, handler, apidefn.RegisterHandlersOptions{
 		BaseURL:              "/api/v1",
 		OperationMiddlewares: map[string][]echo.MiddlewareFunc{
-			"GetAuthMe": {h.AuthMiddleware()},
+			"GetAuthMe":      {h.AuthMiddleware()},
+			"PostAuthLogout": {h.AuthMiddleware()},
 		},
 	})
 }
@@ -158,6 +159,7 @@ func (h *HttpComponent) AuthMiddleware() echo.MiddlewareFunc {
 			}
 			// 3. (Optional) Inject the session data into the context so your GetAuthMe handler can use it
 			ctx.Set("user_session", sessionData)
+			ctx.Set("session_id", "session:"+sessionID)
 			// 4. Proceed to the actual handler (GetAuthMe)
 			return next(ctx)
 		}

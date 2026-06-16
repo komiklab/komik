@@ -4,6 +4,8 @@ import (
 	"errors"
 	"net/url"
 
+	"strings"
+
 	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/komiklab/komik/apidefn"
 	"github.com/komiklab/komik/internal"
@@ -12,13 +14,22 @@ import (
 	"github.com/komiklab/komik/internal/repositories"
 	"github.com/komiklab/komik/internal/utils"
 	"github.com/labstack/echo/v5"
+	"github.com/rs/zerolog/log"
 	"golang.org/x/oauth2"
-	"strings"
 	// "golang.org/x/oauth2"
 )
 
 type AuthService struct {
 	authrepo *repositories.AdminRepo
+}
+
+func (a *AuthService) Logout(sessionId string) error {
+	err := a.authrepo.DeleteSession(sessionId)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to delete session")
+		return err
+	}
+	return nil
 }
 
 func NewAuthService(dbcon *client.PostgresClient, cache *client.RedisClient) *AuthService {

@@ -1,10 +1,21 @@
 import { Avatar, Group, Menu, Text, UnstyledButton } from "@mantine/core";
 import { IconLogout, IconSettings } from "@tabler/icons-react";
-import { postAuthLogout, usePostAuthLogout } from "../../api/komik";
+import { usePostAuthLogout } from "../../api/komik";
 
 export default function UserMenu() {
+  const { mutate: logout } = usePostAuthLogout({
+    mutation: {
+      onSuccess: () => {
+        //redirect to /
+        window.location.href = "/";
+      },
+      onError: (error) => {
+        console.log("Error logging out:", error);
+      },
+    },
+  });
   const handleLogout = async () => {
-    await postAuthLogout();
+    await logout();
   };
   return (
     <Menu shadow="lg" width={220} position="bottom-end">
@@ -30,7 +41,11 @@ export default function UserMenu() {
         <Menu.Label>Account</Menu.Label>
         <Menu.Item leftSection={<IconSettings size={16} />}>Settings</Menu.Item>
         <Menu.Divider />
-        <Menu.Item color="red" leftSection={<IconLogout size={16} />} onClick={handleLogout}>
+        <Menu.Item
+          color="red"
+          leftSection={<IconLogout size={16} />}
+          onClick={handleLogout}
+        >
           Sign out
         </Menu.Item>
       </Menu.Dropdown>

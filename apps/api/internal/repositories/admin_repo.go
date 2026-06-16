@@ -18,6 +18,11 @@ type AdminRepo struct {
 	cache  *client.RedisClient
 }
 
+func (a *AdminRepo) DeleteSession(sessionId string) error {
+	return a.cache.Del(sessionId)
+	
+}
+
 func (a *AdminRepo) CreateSession(representation *models.UserRepresentation) (string, error) {
 	session_id := uuid.New().String()
 	sessoionBytes, err := json.Marshal(representation)

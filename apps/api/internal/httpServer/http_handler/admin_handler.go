@@ -1,6 +1,7 @@
 package httphandler
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/asaskevich/govalidator/v12"
@@ -93,12 +94,12 @@ func (h *HttpHandler) PostAuthLogin(ctx *echo.Context) error {
 	// lets set http cookie
 	sessionTTL := utils.SESSION_TTL
 	sessionCookie := http.Cookie{
-		Name: utils.SESSION_COOKIE_NAME,
-		Value: sessionID,
-		Path: "/",
-		MaxAge: int(sessionTTL.Seconds()),
+		Name:     utils.SESSION_COOKIE_NAME,
+		Value:    sessionID,
+		Path:     "/",
+		MaxAge:   int(sessionTTL.Seconds()),
 		HttpOnly: true,
-		Secure: ctx.Request().TLS != nil,
+		Secure:   ctx.Request().TLS != nil,
 		SameSite: http.SameSiteLaxMode,
 	}
 	http.SetCookie(ctx.Response(), &sessionCookie)
@@ -108,5 +109,30 @@ func (h *HttpHandler) PostAuthLogin(ctx *echo.Context) error {
 
 // PostAuthLogout implements [apidefn.ServerInterface].
 func (h *HttpHandler) PostAuthLogout(ctx *echo.Context) error {
-	panic("unimplemented")
+	sessionId := ctx.Get("session_id").(string)
+	authsrv := auth.NewAuthService(h.dbclient, h.cache)
+	err := authsrv.Logout(sessionId)
+	if err != nil {
+		komikErr, ok := err.(*utils.KomikError)
+		if !ok {
+			komikErr = utils.NewGeneralError(err)
+		}
+		var redisNilErr *utils.KomikError
+		if errors.As(err, &redisNilErr) {
+			komikErr.WithStatusCode(http.StatusPreconditionFailed)
+		}
+		return ctx.JSON(int(komikErr.StatusCode), komikErr)
+	}
+	// invalidate the session cookie
+	c := &http.Cookie{
+		Name:     utils.SESSION_COOKIE_NAME,
+		Value:    "",
+		Path:     "/",
+		MaxAge:   -1,
+		HttpOnly: true,
+		Secure:   ctx.Request().TLS != nil,
+		SameSite: http.SameSiteLaxMode,
+	}
+	http.SetCookie(ctx.Response(), c)
+	return ctx.NoContent(http.StatusOK)
 }

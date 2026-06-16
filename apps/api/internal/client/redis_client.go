@@ -64,5 +64,14 @@ func (r *RedisClient) Get(key string) (string, error) {
 }
 
 func (r *RedisClient) Del(key string) error {
-	return r.client.Del(context.Background(), key).Err()
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	deleted, error := r.client.Del(ctx, key).Result()
+	if error == nil && deleted == 0 {
+		return utils.NewRedisReturnsNilError("Key not found", redis.Nil)
+	}
+	if error != nil {
+		return utils.NewRedisError("Failed to delete key", error)
+	}
+	return nil
 }

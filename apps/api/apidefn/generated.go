@@ -12,6 +12,7 @@ import (
 	"net/url"
 	"path"
 	"strings"
+	"time"
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/labstack/echo/v5"
@@ -30,6 +31,29 @@ type AdminGetResponse struct {
 	Exists bool `json:"exists"`
 }
 
+// AuditlogGetResponse defines model for auditlogGetResponse.
+type AuditlogGetResponse struct {
+	Items    *[]AuditlogResponse `json:"items,omitempty"`
+	Metadata *struct {
+		Limit  *int `json:"limit,omitempty"`
+		Offset *int `json:"offset,omitempty"`
+		Total  *int `json:"total,omitempty"`
+	} `json:"metadata,omitempty"`
+}
+
+// AuditlogResponse defines model for auditlogResponse.
+type AuditlogResponse struct {
+	CorrelationId *string             `json:"correlation_id,omitempty"`
+	Data          *string             `json:"data,omitempty"`
+	EventId       *openapi_types.UUID `json:"event_id,omitempty"`
+	EventVersion  *int                `json:"event_version,omitempty"`
+	InitiatorId   *string             `json:"initiator_id,omitempty"`
+	InitiatorType *string             `json:"initiator_type,omitempty"`
+	OccurredAt    *time.Time          `json:"occurred_at,omitempty"`
+	ResourceType  *string             `json:"resource_type,omitempty"`
+	Severity      *string             `json:"severity,omitempty"`
+}
+
 // ErrorResponse defines model for errorResponse.
 type ErrorResponse struct {
 	ErrorCode    *string `json:"error_code,omitempty"`
@@ -40,6 +64,12 @@ type ErrorResponse struct {
 type UserResponse struct {
 	Id       *openapi_types.UUID  `json:"id,omitempty"`
 	Username *openapi_types.Email `json:"username,omitempty"`
+}
+
+// GetAuditlogParams defines parameters for GetAuditlog.
+type GetAuditlogParams struct {
+	Limit  int `form:"limit" json:"limit"`
+	Offset int `form:"offset" json:"offset"`
 }
 
 // GetAuthOidcCallbackParams defines parameters for GetAuthOidcCallback.
@@ -68,6 +98,9 @@ type ServerInterface interface {
 
 	// (POST /admin)
 	PostAdmin(ctx *echo.Context) error
+
+	// (GET /auditlog)
+	GetAuditlog(ctx *echo.Context, params GetAuditlogParams) error
 
 	// (POST /auth/login)
 	PostAuthLogin(ctx *echo.Context) error
@@ -108,6 +141,31 @@ func (w *ServerInterfaceWrapper) PostAdmin(ctx *echo.Context) error {
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.PostAdmin(ctx)
+	return err
+}
+
+// GetAuditlog converts echo context to params.
+func (w *ServerInterfaceWrapper) GetAuditlog(ctx *echo.Context) error {
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetAuditlogParams
+	// ------------- Required query parameter "limit" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, true, "limit", ctx.QueryParams(), &params.Limit, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter limit: %s", err))
+	}
+
+	// ------------- Required query parameter "offset" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, true, "offset", ctx.QueryParams(), &params.Offset, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter offset: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetAuditlog(ctx, params)
 	return err
 }
 
@@ -230,6 +288,7 @@ func RegisterHandlersWithOptions(router EchoRouter, si ServerInterface, options 
 
 	router.GET(options.BaseURL+"/admin", wrapper.GetAdmin, options.OperationMiddlewares["GetAdmin"]...)
 	router.POST(options.BaseURL+"/admin", wrapper.PostAdmin, options.OperationMiddlewares["PostAdmin"]...)
+	router.GET(options.BaseURL+"/auditlog", wrapper.GetAuditlog, options.OperationMiddlewares["GetAuditlog"]...)
 	router.POST(options.BaseURL+"/auth/login", wrapper.PostAuthLogin, options.OperationMiddlewares["PostAuthLogin"]...)
 	router.POST(options.BaseURL+"/auth/logout", wrapper.PostAuthLogout, options.OperationMiddlewares["PostAuthLogout"]...)
 	router.GET(options.BaseURL+"/auth/me", wrapper.GetAuthMe, options.OperationMiddlewares["GetAuthMe"]...)
@@ -244,18 +303,22 @@ func RegisterHandlersWithOptions(router EchoRouter, si ServerInterface, options 
 // const string: with thousands of chunks the chained `+` fold is several
 // times slower for the Go compiler than parsing a slice literal.
 var swaggerSpec = []string{
-	"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",
+	"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",
+	"W5pF81cAAAD//w==",
 }
 
 // decodeSpec returns the embedded OpenAPI spec as raw JSON bytes,

@@ -8,6 +8,7 @@ tags:
   - name: admin
   - name: auth
   - name: hook
+  - name: auditlog
 
 paths:
   /hook/slack:
@@ -165,9 +166,86 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/errorResponse"
-
+  /auditlog:
+    get:
+      tags:
+        - auditlog
+      parameters:
+        - name: limit
+          in: query
+          required: true
+          schema:
+            type: integer
+            example: 25
+        - name: offset
+          in: query
+          required: true
+          schema:
+            type: integer
+            example: 0
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/auditlogGetResponse"
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/errorResponse"
 components:
   schemas:
+    auditlogGetResponse:
+      type: object
+      properties:
+        metadata:
+          type: object
+          properties:
+            total:
+              type: integer
+              example: 100
+            limit:
+              type: integer
+              example: 25
+            offset:
+              type: integer
+              example: 0
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/auditlogResponse"
+    auditlogResponse:
+      type: object
+      properties:
+        event_id:
+          type: string
+          format: uuid
+        event_version:
+          type: integer
+        occurred_at:
+          type: string
+          format: date-time
+        correlation_id:
+          type: string
+        initiator_id:
+          type: string
+        initiator_type:
+          type: string
+        resource_type:
+          type: string
+        severity:
+          type: string
+        data:
+          type: string
     slackEventRequest:
       type: object
       required:

@@ -157,10 +157,9 @@ export const customInstance = <TData>(
 
   // Attach a cancel helper so React Query can abort in-flight requests when a
   // component unmounts or a new request supersedes the previous one.
-  (promise as ReturnType<typeof promise> & { cancel?: () => void }).cancel =
-    () => {
-      source.cancel("Query was cancelled by React Query");
-    };
+  (promise as typeof promise & { cancel?: () => void }).cancel = () => {
+    source.cancel("Query was cancelled by React Query");
+  };
 
   return promise;
 };

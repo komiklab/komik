@@ -7,7 +7,11 @@
 
 export * from './adminCreateRequest';
 export * from './adminGetResponse';
+export * from './auditlogGetResponse';
+export * from './auditlogGetResponseMetadata';
+export * from './auditlogResponse';
 export * from './errorResponse';
+export * from './getAuditlogParams';
 export * from './getAuthOidcCallbackParams';
 export * from './postHookSlackBody';
 export * from './slackEventRequest';

@@ -9,10 +9,9 @@ import { useRouter } from "next/navigation";
 
 interface AdminPanelProps {
   onBack: () => void;
-  loading?: boolean;
 }
 
-export function AdminPanel({ onBack, loading = false }: AdminPanelProps) {
+export function AdminPanel({ onBack }: AdminPanelProps) {
   const router = useRouter();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -67,7 +66,7 @@ export function AdminPanel({ onBack, loading = false }: AdminPanelProps) {
         >
           Admin access
         </Badge>
-        <Text fw={500} fz={20} c="dark">
+        <Text fw={800} fz={24}>
           Admin login
         </Text>
         <Text fz="sm" c="dimmed">

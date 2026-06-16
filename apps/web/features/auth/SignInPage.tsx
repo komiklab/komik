@@ -7,13 +7,11 @@ import { AdminPanel } from "./AdminPanel";
 // import { AdminFormValues } from '../../components/form/AdminLoginForm';
 // import { AdminPanel } from './AdminPanel';
 import { getGetAuthOidcLoginUrl } from "../../api/komik";
-import { useEffect } from "react";
 
 type View = "oidc" | "admin";
 
 export function SignInPage() {
   const [view, setView] = useState<View>("oidc");
-  const [adminLoading, setAdminLoading] = useState(false);
   const [isOidcLoading, setIsOidcLoading] = useState(false);
 
   function RedirectOIDC() {
@@ -26,7 +24,7 @@ export function SignInPage() {
       {view === "oidc" ? (
         <Stack gap="lg">
           <Stack gap={4}>
-            <Text fw={500} fz={20} c="dark">
+            <Text fw={800} fz={24}>
               Welcome back
             </Text>
             <Text fz="sm" c="dimmed" lh={1.6}>
@@ -36,7 +34,8 @@ export function SignInPage() {
 
           <Button
             fullWidth
-            variant="default"
+            variant="gradient"
+            gradient={{ from: "teal", to: "blue" }}
             size="md"
             loading={isOidcLoading}
             leftSection={<IconShieldCheck size={18} />}
@@ -51,7 +50,7 @@ export function SignInPage() {
             <Anchor
               component="button"
               fz="sm"
-              c="dimmed"
+              c="teal.3"
               underline="always"
               onClick={() => setView("admin")}
               style={{ textUnderlineOffset: 3 }}
@@ -61,7 +60,7 @@ export function SignInPage() {
           </Center>
         </Stack>
       ) : (
-        <AdminPanel onBack={() => setView("oidc")} loading={adminLoading} />
+        <AdminPanel onBack={() => setView("oidc")} />
       )}
     </AuthCard>
   );

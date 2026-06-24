@@ -42,6 +42,7 @@ func (h *HttpHandler) GetAuditlog(ctx *echo.Context, params apidefn.GetAuditlogP
 			ResourceType:  &l.ResourceType,
 			Severity:      &l.Severity,
 			Data:          &l.Data,
+			EventType:     &l.EventType,
 		})
 	}
 

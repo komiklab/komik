@@ -10,6 +10,7 @@ import (
 	"github.com/komiklab/komik/internal/models"
 	"github.com/komiklab/komik/internal/utils"
 	"github.com/labstack/echo/v5"
+	"github.com/rs/zerolog/log"
 )
 
 // GetAdmin implements [apidefn.ServerInterface].
@@ -103,7 +104,17 @@ func (h *HttpHandler) PostAuthLogin(ctx *echo.Context) error {
 		SameSite: http.SameSiteLaxMode,
 	}
 	http.SetCookie(ctx.Response(), &sessionCookie)
-	//return ctx.Redirect(http.StatusFound, h.cfg.PostLoginRedirect)
+	// publish an successful event
+	reqId := ctx.Response().Header().Get(echo.HeaderXRequestID)
+	msg, err := authsrv.MessageSignInEvent(user.Username, reqId)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to create sign in event")
+	} else {
+		err := h.publisher.Publish(auth.EventSigninSubject, msg)
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to publish sign in event")
+		}
+	}
 	return ctx.NoContent(http.StatusOK)
 }
 
@@ -111,7 +122,12 @@ func (h *HttpHandler) PostAuthLogin(ctx *echo.Context) error {
 func (h *HttpHandler) PostAuthLogout(ctx *echo.Context) error {
 	sessionId := ctx.Get("session_id").(string)
 	authsrv := auth.NewAuthService(h.dbclient, h.cache)
-	err := authsrv.Logout(sessionId)
+	// before we delete session, we get the user id	
+	user, err := authsrv.RetrieveUserFromSession(sessionId)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to retrieve user from session")
+	}
+	err = authsrv.Logout(sessionId)
 	if err != nil {
 		komikErr, ok := err.(*utils.KomikError)
 		if !ok {
@@ -134,5 +150,18 @@ func (h *HttpHandler) PostAuthLogout(ctx *echo.Context) error {
 		SameSite: http.SameSiteLaxMode,
 	}
 	http.SetCookie(ctx.Response(), c)
+	// publish successful event
+	// first get the username
+
+	reqId := ctx.Response().Header().Get(echo.HeaderXRequestID)
+	msg, err := authsrv.MessageSignOutEvent(user.Username, reqId)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to create sign out event")
+	} else {
+		err := h.publisher.Publish(auth.EventSignoutSubject, msg)
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to publish sign out event")
+		}
+	}	
 	return ctx.NoContent(http.StatusOK)
 }

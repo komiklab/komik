@@ -2,6 +2,7 @@ package repositories
 
 import (
 	//"github.com/komiklab/komik/apidefn"
+	"bytes"
 	"encoding/json"
 	"errors"
 
@@ -16,6 +17,20 @@ import (
 type AdminRepo struct {
 	gormdb *gorm.DB
 	cache  *client.RedisClient
+}
+
+func (a *AdminRepo) FetchUserFromSession(sessionId string) (*models.UserRepresentation, error) {
+	userString, err := a.cache.Get(sessionId)
+	if err != nil {
+		return nil, utils.NewRedisError("failed to fetch user from session", err)
+	}
+	var user models.UserRepresentation
+	userBytes := []byte(userString)
+	err = json.NewDecoder(bytes.NewBuffer(userBytes)).Decode(&user)
+	if err != nil {
+		return nil, utils.NewInternalServerError("failed to fetch user from session", err)
+	}
+	return &user, nil
 }
 
 func (a *AdminRepo) DeleteSession(sessionId string) error {

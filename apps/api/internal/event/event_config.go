@@ -3,7 +3,7 @@ package event
 import (
 	"context"
 	"fmt"
-
+	"strings"
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/nats-io/nats.go/jetstream"
 	js "github.com/ThreeDotsLabs/watermill-nats/v2/pkg/jetstream"
@@ -22,10 +22,18 @@ func consumerForSubject(subject string) js.ResourceInitializer {
 		if err != nil {
 			return nil, nil, fmt.Errorf("failed to get stream for topic %s: %w", topic, err)
 		}
+		// sanitize: replace dots and strip wildcards
+        durableName := strings.NewReplacer(
+            ".", "-",
+            ">", "",
+            "*", "",
+        ).Replace(subject)
+		durableName = strings.Trim(durableName, "-")
 		consumer, err := stream.CreateOrUpdateConsumer(ctx, jetstream.ConsumerConfig{
+			Durable:         durableName,
 			FilterSubject: subject,
 			AckPolicy:    jetstream.AckExplicitPolicy,
-			DeliverPolicy: jetstream.DeliverAllPolicy,
+			DeliverPolicy: jetstream.DeliverNewPolicy,
 		})
 		if err != nil {
 			return nil, nil, fmt.Errorf("failed to create or update consumer for topic %s: %w", topic, err)

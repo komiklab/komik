@@ -46,6 +46,7 @@ type AuditlogResponse struct {
 	CorrelationId *string             `json:"correlation_id,omitempty"`
 	Data          *string             `json:"data,omitempty"`
 	EventId       *openapi_types.UUID `json:"event_id,omitempty"`
+	EventType     *string             `json:"event_type,omitempty"`
 	EventVersion  *int                `json:"event_version,omitempty"`
 	InitiatorId   *string             `json:"initiator_id,omitempty"`
 	InitiatorType *string             `json:"initiator_type,omitempty"`
@@ -303,22 +304,22 @@ func RegisterHandlersWithOptions(router EchoRouter, si ServerInterface, options 
 // const string: with thousands of chunks the chained `+` fold is several
 // times slower for the Go compiler than parsing a slice literal.
 var swaggerSpec = []string{
-	"7FdRj9s2DP4rgbZHL/bdtS9+6w5YV7RbD93jEBx0FhOrZ4s+is4WBP7vgyTHiWMn8YYrkA17imN9IkXy",
+	"7FdRj9s2DP4rgbZHL/bdtS9+6w5YV7RbD93jEBx0FhOrZ4s+is4WBP7vgyTHiWM7yYYrkA17imN9IkXy",
 	"40d5KzIsKzRg2Ip0K2yWQyn9o1SlNvcEkuELvNRg2b2tCCsg1uAxlbT2DyTlnpdIpWSR7l9GgjcViFRY",
 	"Jm1WoolEbYGMLMFtOFpsIkHwUmsCJdLf98hob3DRWcSnr5Cxs+iP+R74C9gKjYXhIeFPbUN07eYnxAKk",
-	"GbhsgaNeaqW5wNVZR5qh7D98T7AUqfgu3mc5blMc70x29prOrySSG/e/BJZKshz6KnSpOUQny6oAkd6+",
-	"7fZrw7ACchZwubTQByZjOEaWRQ92k4wAm0FumjPZOp2qDImgkKzRPGo1woZI7OIeLMAaDLe7OtLVtR4l",
-	"XACvgaxGc2DuIHRtNGvJSKdOsgeEpREIZllNBOpRcu9YSjL8wNrTeLCJwGJNGZw2a2ENpHkz3i6DvAMR",
-	"0plGcMuPGapxZ2G5BGvlCiZ6dF16piGm1ehQFDowlFIXQ/QIAX2FluhPrNlRV7x7+DC7R8MkM7azJdLs",
-	"I5b6WUSiY4K4mSe+chUYWWmRirt5Mr/zcsO5P37stcU9rUILudg8Zz8okYr3wO88wFfSp8Bvu02SQHHD",
-	"YPw+WVWFzvzO+KsNPAwycFEkjtXNh6vAZqQrDoF8/ujieJO8eTWvfR6NuPwVefYT1kY5z29fMd6Lnl3f",
-	"kpHFzAKtgWZ+Q6CFXFmn4qFoiyYSFdqRsj2gPaibH2w/otq8bsn6c7PpTxqmGpoBaW7cTz/YYOWak9xE",
-	"ohtkZxtlh3HtRbIEBnKGtsI1mHipgTYiEkEF2uF2nLLoILyzU6+Jxs22s3CS3bHZt/iWjT5ywfi/1y/S",
-	"cEerHRM5jwtcBdE+0/4155887LokIBlKQCj41aWd86OUY82Tcu5wR3HfJbfDuK+Xcf3Qw63ltOxx/gt8",
-	"ywtC7wJ2UjCuPImoVRZnsiieZPZ8KZ+ftcrud9hJ48TfeM+p/uCOOW7HsuS/Z2jxX6K6r1KnrpdKtNfX",
-	"afFHIgepfBm34hOGoPvxHme3ueqc5YjPsS1aRp8Wxp8Rn38rApn/6TCSSmm3JIuHgw+wwM6Rz6VJc2iy",
-	"80FZ/hUa5MrjKuW/sh0m6EdNhUhFzlzZNI5lpedhdc5gOV7fCNfTrY3tThjCbdjJxu6Fo8HBf++st97e",
-	"W5pF81cAAAD//w==",
+	"GbhsgaNeaqW5wNVJR5qh7D98T7AUqfgu3mc5blMc70x29prOrySSG/e/BJZKshz6KnSpOUQny6oAkd6+",
+	"7fZrw7ACchZwubTQByZjOEaWRQ92k4wAm0FumhPZmk5VhkRQSNZoHrUaYUMkdnEPFmANhttdHenqWo8S",
+	"LoDD60lbayCr0RwgDjKjjWYtGWnqoHvApBvMspoI1KPk3qmVZPiBtWf5YBOBxZoymDZrYQ2keTPeTYOy",
+	"ABHSiT5xy48ZqolU+eUSrJUruNCja+IT/XJZCQ81owNDKXUxRI/w01doif7Emh2zxbuHD7N7NEwyYztb",
+	"Is0+YqmfRSQ6JoibeeIrV4GRlRapuJsn8zuvRpz748deetzTKnSYi81T+oMSqXgP/M4DfCV9Cvy22yQJ",
+	"HWAYjN8nq6rQmd8Zf7WBh0ElzmrIsfj5cBXYjHTFIZDPH10cb5I3r+a1z6MRl78iz37C2ijn+e0rxnvW",
+	"s+tbMrKYWaA10MxvCLSQK+tEPhRt0USiQjtStge0B3Xzc+9HVJvXLVl/rDb9QcRUQzMgzY376QcbrFxz",
+	"kptIdHPuZKPsMK69SJbAQM7QVrgGEy810EZEIqhAO/uOUxYdhHdyKDbRuNl2VF5kd2w0Lr5lo4/cP/7v",
+	"9bM03NFqx0TO4wJXQbRPtH/N+ScPuy4JSIYSEAp+dWnn/CjlWPNFOXe4o7jvktth3NfLuH7o4dYyLXuc",
+	"/wLf8oLQu4BNCsaVJxG1yuJMFsWTzJ7P5fOzVtn9DnvROPE33lOqP7hjjtuxLPnvGVr8l6juq9Sp67kS",
+	"7fX1svgjkYNUvoxb8QlD0P14j7PbXHXOcsTn2BYto6eF8WfE59+KQOZ/OoykUtotyeLh4AMssHPkc+mi",
+	"OXSx80FZ/hUa5MrjKuW/sh0m6EdNhUhFzlzZNI5lpedhdc5gOV7fCNfTrY3tThjCbdjJxu6Fo8HBf++s",
+	"t97eW5pF81cAAAD//w==",
 }
 
 // decodeSpec returns the embedded OpenAPI spec as raw JSON bytes,

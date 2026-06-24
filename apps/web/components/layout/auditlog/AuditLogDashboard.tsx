@@ -74,7 +74,7 @@ const columns: MRT_ColumnDef<AuditlogResponse>[] = [
               <IconShieldCheck size={15} />
             </ThemeIcon>
             <Text fw={700} fz="sm">
-              {item.resource_type ?? "System event"}
+              {item.event_type ?? "System event"}
             </Text>
           </Group>
           <Tooltip label={item.event_id ?? "No event id"} withinPortal>

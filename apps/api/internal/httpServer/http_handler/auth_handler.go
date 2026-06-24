@@ -14,6 +14,7 @@ import (
 	"github.com/labstack/echo/v5"
 	"golang.org/x/oauth2"
 	"strings"
+	"github.com/rs/zerolog/log"
 	// "github.com/coreos/go-oidc/v3/oidc"
 	// "net/url"
 )
@@ -71,6 +72,16 @@ func (h *HttpHandler) GetAuthOidcCallback(ctx *echo.Context, params apidefn.GetA
 		SameSite: http.SameSiteLaxMode,
 	}
 	http.SetCookie(ctx.Response(), &sessionCookie)
+	reqId := ctx.Response().Header().Get(echo.HeaderXRequestID)
+	msg, err := authsrv.MessageSignInEvent(user.Username, reqId)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to create sign in event")
+	} else {
+		err := h.publisher.Publish(auth.EventSigninSubject, msg)
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to publish sign in event")
+		}
+	}
 	return ctx.Redirect(http.StatusFound, h.cfg.PostLoginRedirect)
 }
 

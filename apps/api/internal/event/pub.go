@@ -29,5 +29,6 @@ func (p *Publisher) GetPublisher() *js.Publisher {
 }
 
 func (p *Publisher) Publish(subject string, message *message.Message) error {
+	log.Debug().Str("subject", subject).Msg("Publishing event")
 	return p.publisher.Publish(subject, message)
 }

@@ -229,6 +229,8 @@ components:
         event_id:
           type: string
           format: uuid
+        event_type:
+          type: string
         event_version:
           type: integer
         occurred_at:

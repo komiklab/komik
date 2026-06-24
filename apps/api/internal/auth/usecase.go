@@ -164,3 +164,7 @@ func (a *AuthService) FetchUser(ctx *echo.Context, params apidefn.GetAuthOidcCal
 	return user, nil
 
 }
+
+func (a *AuthService) RetrieveUserFromSession(sessionId string) (*models.UserRepresentation, error) {
+	return a.authrepo.FetchUserFromSession(sessionId)
+}

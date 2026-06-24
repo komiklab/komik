@@ -3,3 +3,4 @@ infra/helm/komik/charts/
 infra/helm/komik/templates/*.yaml1
 mocks
 apps/api/.env.development
+apps/api/cmd/api/__debug_bin*

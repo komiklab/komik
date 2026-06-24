@@ -1,8 +1,11 @@
 import { Avatar, Group, Menu, Text, UnstyledButton } from "@mantine/core";
 import { IconLogout, IconSettings } from "@tabler/icons-react";
-import { usePostAuthLogout } from "../../api/komik";
+import { usePostAuthLogout, useGetAuthMe } from "../../api/komik";
 
 export default function UserMenu() {
+  const { data: authdata } = useGetAuthMe();
+  const username = authdata?.status === 200 ? authdata.data.username : undefined;
+  console.log("username is " + username)
   const { mutate: logout } = usePostAuthLogout({
     mutation: {
       onSuccess: () => {
@@ -15,7 +18,7 @@ export default function UserMenu() {
     },
   });
   const handleLogout = async () => {
-    await logout();
+    logout();
   };
   return (
     <Menu shadow="lg" width={220} position="bottom-end">
@@ -28,17 +31,14 @@ export default function UserMenu() {
         >
           <Group gap="xs" wrap="nowrap">
             <Avatar radius="xl" color="teal">
-              KL
+              {username?.toUpperCase()[0]}
             </Avatar>
-            <Text visibleFrom="sm" fz="sm" fw={600}>
-              Admin
-            </Text>
           </Group>
         </UnstyledButton>
       </Menu.Target>
 
       <Menu.Dropdown>
-        <Menu.Label>Account</Menu.Label>
+        <Menu.Label>{username}</Menu.Label>
         <Menu.Item leftSection={<IconSettings size={16} />}>Settings</Menu.Item>
         <Menu.Divider />
         <Menu.Item

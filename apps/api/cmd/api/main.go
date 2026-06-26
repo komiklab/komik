@@ -13,6 +13,7 @@ import (
 	"github.com/komiklab/komik/internal/event"
 	httpserver "github.com/komiklab/komik/internal/httpServer"
 	"github.com/komiklab/komik/internal/models"
+	"github.com/komiklab/komik/internal/task_queue/worker"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
@@ -28,14 +29,22 @@ func main() {
 	log.Logger = log.With().Caller().Logger().Output(zerolog.ConsoleWriter{Out: os.Stdout})
 	log.Debug().Msg("Starting API server with debug logging enabled ")
 	postgresclient := client.NewPostgresClient(cfg)
-	postgresclient.Migrate(&models.Admin{}, models.AuditLog{}, models.UserRepresentation{})
+	postgresclient.Migrate(
+		models.Admin{},
+		models.AuditLog{},
+		models.UserRepresentation{},
+		models.Entity{},
+		models.EntityInterrupt{},
+	)
 	redisClient := client.NewRedisClient(cfg)
 	contrlr := controller.NewController(cfg)
 	publisher := event.NewPublisher(cfg)
 	httpComponent := httpserver.NewHttpComponent(cfg, postgresclient, publisher, redisClient)
 	eventComponent := event.NewEventLoopComponent(cfg, postgresclient)
+	workerComponent := worker.NewWorkerComponent(redisClient,cfg)
 	contrlr.AddComponent(eventComponent)
 	contrlr.AddComponent(httpComponent)
+	contrlr.AddComponent(workerComponent)
 	contrlr.Init()
 	contrlr.Start()
 	stopchannel := make(chan os.Signal, 1)

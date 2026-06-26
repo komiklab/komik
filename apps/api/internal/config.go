@@ -7,7 +7,7 @@ import (
 )
 
 type Config struct {
-	IsDebugLoggerConfig bool   `valid:"-" env:"IS_DEBUG_LOGGER_CONFIG" envDefault:"true"`
+	IsDebugLoggerConfig bool   `valid:"-" env:"IS_DEBUG_LOGGER_CONFIG" envDefault:"false"`
 	PostgresDSN         string `valid:"-" env:"POSTGRES_DSN" envDefault:"postgres://komik:komik@localhost:5434/komik?sslmode=disable"`
 	CORSSupport         string `valid:"-" env:"CORS_SUPPORT" envDefault:"http://localhost:3000"`
 	NatsURL             string `valid:"-" env:"NATS_URL" envDefault:"nats://localhost:4222"`

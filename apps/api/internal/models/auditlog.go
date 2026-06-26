@@ -17,7 +17,8 @@ type AuditLog struct {
 	ResourceType  string    `gorm:"type:varchar(255);not null" json:"resource_type"`
 	Severity      string    `gorm:"type:varchar(255);not null" json:"severity"`
 	Payload       string    `gorm:"serializer:json;not null" json:"-"`
-	Data          string    `gorm:"serializer:json;not null" json:"data"`
+	Data          string    `gorm:"serializer:json;not null" json:"-"`
+	CausationId   string    `gorm:"type:string;default:'';not null" json:"causation_id"`
 }
 
 func (a *AuditLog) Unmarshal(data []byte) error {

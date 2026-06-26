@@ -46,6 +46,7 @@ func (a *AuthService) MessageEventAdminCreated(admin string, correlationId strin
 	}
 	jsonData, err := eventData.Marshal()
 	if err != nil {
+		log.Error().Err(err).Msg("failed to marshal admin created event")
 		return nil, err
 		// ignore the error
 	}

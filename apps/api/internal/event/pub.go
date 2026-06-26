@@ -5,6 +5,7 @@ import (
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/komiklab/komik/internal"
 	"github.com/rs/zerolog/log"
+	"github.com/alexdrl/zerowater"
 )
 
 type Publisher struct {
@@ -12,7 +13,7 @@ type Publisher struct {
 }
 
 func NewPublisher(cfg *internal.Config) *Publisher {
-	logger := NewZerologLoggerAdapter(log.Logger)
+	logger := zerowater.NewZerologLoggerAdapter(log.Logger)
 	publisher, err := js.NewPublisher(js.PublisherConfig{
 		Logger: logger,
 	})

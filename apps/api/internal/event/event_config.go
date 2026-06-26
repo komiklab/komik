@@ -13,6 +13,8 @@ const (
 	StreamName = "komik-stream"
 	AuditLogSubject = "komik.>"
 	AuditLogHandlerName = "komik-audit-handler"
+	EntitySubject = "komik.entity.>"
+	EntityHandlerName = "komik-entity-handler"
 )
 
 

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	js "github.com/ThreeDotsLabs/watermill-nats/v2/pkg/jetstream"
+	"github.com/alexdrl/zerowater"
 	"github.com/komiklab/komik/internal"
 	"github.com/rs/zerolog/log"
 )
@@ -14,7 +15,7 @@ type NatsSubscriber struct {
 }
 
 func NewNatsSubscriber(cfg *internal.Config, subject string) (*NatsSubscriber, error) {
-	logger := NewZerologLoggerAdapter(log.Logger)
+	logger := zerowater.NewZerologLoggerAdapter(log.Logger)
 	subscriber, err := js.NewSubscriber(js.SubscriberConfig{
 		URL:                 cfg.NatsURL,
 		Logger:              logger,

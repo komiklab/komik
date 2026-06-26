@@ -6,7 +6,11 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/komiklab/komik/internal"
+	"github.com/komiklab/komik/internal/client"
+	taskqueue "github.com/komiklab/komik/internal/task_queue"
+	asynclient "github.com/komiklab/komik/internal/task_queue/client"
 	"github.com/labstack/echo/v5"
 	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
@@ -16,14 +20,27 @@ import (
 type SlackWebHook struct {
 	client        *slack.Client
 	signingSecret string
+	taskQ         *asynclient.AsynqClient
 }
 
 func NewSlackWebHook(cfg *internal.Config) *SlackWebHook {
+	redisclient := client.NewRedisClient(cfg)
+	taskQ := asynclient.NewAsyncClient(redisclient)
 	api := slack.New(cfg.SlackIntegration.BotToken, slack.OptionDebug(cfg.IsDebugLoggerConfig))
 	return &SlackWebHook{
 		client:        api,
 		signingSecret: cfg.SlackIntegration.SigningSecret,
+		taskQ:         taskQ,
 	}
+}
+
+func (s *SlackWebHook) GetUserEmail(userId string) (string, error) {
+	user, err := s.client.GetUserInfo(userId)
+	if err != nil {
+		log.Error().Msgf("failed to get user info: %v", err)
+		return "", err
+	}
+	return user.Profile.Email, nil
 }
 
 func (s *SlackWebHook) Handle(ctx *echo.Context, payload []byte) error {
@@ -58,11 +75,36 @@ func (s *SlackWebHook) Handle(ctx *echo.Context, payload []byte) error {
 	case slackevents.CallbackEvent:
 		innerEvent := eventAPIevent.InnerEvent
 		mentionRe := regexp.MustCompile(`<@[A-Z0-9]+>`)
-		
 		switch ev := innerEvent.Data.(type) {
 		case *slackevents.AppMentionEvent:
 			cleanText := strings.TrimSpace(mentionRe.ReplaceAllString(ev.Text, ""))
 			log.Info().Msgf("app mention event received: '%s'", cleanText)
+			// payloadBytes, err := json.Marshal(map[string]string{"text": cleanText})
+			// if err != nil {
+			// 	log.Error().Msgf("failed to marshal clean text: %v", err)
+			// 	return err
+			// }
+			// generate acknowledgement ID
+			ackid := uuid.New().String()
+			// add to task queue
+			eventBytes, err := json.Marshal(ev)
+			if err != nil {
+				log.Error().Err(err).Msg("failed to marshal event")
+				return err
+			}
+			headers := map[string]string{
+				"acknowledgement": ackid}
+			if err := s.taskQ.EnqueueTask(taskqueue.SlackAppMention, eventBytes, headers); err != nil {
+				log.Error().Msgf("failed to enqueue task: %v", err)
+				return err
+			}
+			// send acknowledgement to slack
+			_, _, err = s.client.PostMessage(ev.Channel, slack.MsgOptionText("ACK:"+ackid, false), slack.MsgOptionTS(ev.TimeStamp))
+			if err != nil {
+				log.Error().Msgf("failed to post message: %v", err)
+				return err
+			}
+			//s.entityService.InitiateEntity(entity.SourceTypeSlack, ev.Channel, user.Profile.Email, payloadBytes)
 		case *slackevents.MessageEvent:
 			cleanText := strings.TrimSpace(mentionRe.ReplaceAllString(ev.Text, ""))
 			log.Info().Msgf("message event received: '%s'", cleanText)

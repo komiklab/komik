@@ -23,3 +23,7 @@ func NewAuditService(dbcon *client.PostgresClient) *AuditService {
 func (a *AuditService) GetAuditLogs(limit, offset int) ([]models.AuditLog, int64, error) {
 	return a.repo.GetAuditLogs(limit, offset)
 }
+
+func (a *AuditService) SaveAuditLog(auditLog *models.AuditLog) error {
+	return a.repo.Save(auditLog)
+}

@@ -13,6 +13,7 @@ import (
 	"github.com/komiklab/komik/internal"
 	"github.com/komiklab/komik/internal/client"
 	"github.com/rs/zerolog/log"
+	"github.com/alexdrl/zerowater"
 )
 
 type EventLoopComponent struct {
@@ -35,7 +36,7 @@ func (w *EventLoopComponent) GetName() string {
 
 // Init implements [Component].
 func (w *EventLoopComponent) Init() {
-	logger := NewZerologLoggerAdapter(log.Logger)
+	logger := zerowater.NewZerologLoggerAdapter(log.Logger)
 	router, err := message.NewRouter(message.RouterConfig{}, logger)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to create router")
@@ -51,8 +52,13 @@ func (w *EventLoopComponent) Init() {
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to create audit subscriber")
 	}
+	entitySub, err := NewNatsSubscriber(w.cfg, EntitySubject)
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to create entity subscriber")
+	}
 	handler := NewEventHandler(w.dbcon)
 	w.router.AddConsumerHandler(AuditLogHandlerName, StreamName, auditSub.GetSubscriber(), handler.HandleAuditLog)
+	w.router.AddConsumerHandler(EntityHandlerName, StreamName, entitySub.GetSubscriber(), handler.HandleEntity)
 	w.forwarder(logger)
 }
 
@@ -74,7 +80,7 @@ func (w *EventLoopComponent) Stop(ctx context.Context) {
 	log.Debug().Msg("Router stopped")
 }
 
-func (w *EventLoopComponent) forwarder(logger *ZerologLoggerAdapter) {
+func (w *EventLoopComponent) forwarder(logger *zerowater.ZerologLoggerAdapter) {
 	dsn := w.cfg.PostgresDSN
 	stdDb, err := sql.Open("postgres", dsn)
 	if err != nil {

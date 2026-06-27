@@ -1,12 +1,12 @@
 package repositories
 
 import (
-	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill/message"
-	"github.com/ThreeDotsLabs/watermill/message/router/middleware"
 	"github.com/komiklab/komik/internal/client"
 	"github.com/komiklab/komik/internal/models"
+	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type EntityRepo struct {
@@ -14,33 +14,23 @@ type EntityRepo struct {
 	fwdpub *ForwarderPublisher
 }
 
-func (e *EntityRepo) Save(entity *models.Entity, inititator string) error {
+func (e *EntityRepo) Save(entity *models.Entity, envelope *message.Message) error {
 	gormdb := e.dbcon.GetClient()
 	return gormdb.Transaction(func(tx *gorm.DB) error {
-		if err := tx.Create(entity).Error; err != nil {
-			return err
+		result := tx.Clauses(clause.OnConflict{
+			Columns: []clause.Column{
+				{Name: "source_ref"},
+			},
+			DoNothing: true,
+		}).Create(entity)
+		if result.Error != nil {
+			return result.Error
 		}
-		databytes, err := entity.Marshal()
-		if err != nil {
-			return err
+		if result.RowsAffected == 0 {
+			log.Warn().Msgf("Entity with Id %s, source ref %s already exists", entity.Id.String(), entity.SourceRef)
+			return nil
 		}
-		eventData := models.AuditLog{
-			EventType:     "EntityInitiated",
-			CorrelationId: entity.SourceRef,
-			InitiatorId:   inititator,
-			InitiatorType: "user",
-			ResourceType:  entity.SourceType,
-			Severity:      "Info",
-			Payload:       string(entity.SourcePayload),
-			Data:          string(databytes),
-		}
-		jsonData, err := eventData.Marshal()
-		if err != nil {
-			return err
-		}
-		msg := message.NewMessage(watermill.NewUUID(), jsonData)
-		middleware.SetCorrelationID(watermill.NewUUID(), msg)
-		return e.fwdpub.Publish(tx, "komik.ent.initiated", msg)
+		return e.fwdpub.Publish(tx, "komik.entity.initiated", envelope)
 	})
 }
 

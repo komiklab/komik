@@ -85,6 +85,7 @@ func NewHttpComponent(cfg *internal.Config, dbclient *client.PostgresClient, pub
 func (h *HttpComponent) addMiddleware() {
 	h.e.Use(middleware.Recover())
 	h.e.Use(middleware.RequestID())
+	h.e.Use(h.LoggerContextMiddleware())
 	h.e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{h.cfg.CORSSupport},
 		AllowHeaders: []string{
@@ -166,5 +167,23 @@ func (h *HttpComponent) AuthMiddleware() echo.MiddlewareFunc {
 	}
 }
 
-
-
+func (h *HttpComponent) LoggerContextMiddleware() echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c *echo.Context) error {
+			reqID := c.Response().Header().Get(echo.HeaderXRequestID)
+			if reqID == "" {
+				reqID = c.Request().Header.Get(echo.HeaderXRequestID)
+			}
+			
+			// Create a child logger with the request_id
+			logger := log.With().Str("request_id", reqID).Logger()
+			
+			// Inject logger into the request context
+			req := c.Request()
+			ctx := logger.WithContext(req.Context())
+			c.SetRequest(req.WithContext(ctx))
+			
+			return next(c)
+		}
+	}
+}

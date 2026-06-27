@@ -1,28 +1,29 @@
 package models
 
 import (
-	"time"
 	"encoding/json"
+	"time"
+
 	"gorm.io/datatypes"
 )
 
 type Entity struct {
-	Id                 datatypes.UUID `json:"id" gorm:"primaryKey;type:uuid;default:uuid_generate_v4()"`
-	CreatedAt          time.Time      `json:"created_at" gorm:"autoCreateTime"`
-	UpdatedAt          time.Time      `json:"updated_at" gorm:"autoUpdateTime"`
-	CompletedAt        time.Time      `json:"completed_at" gorm:"default:null"`
-	SourceType         string         `json:"source_type" gorm:"type:varchar(10);not null"`
-	SourceRef          string         `json:"source_ref" gorm:"type:varchar(255);not null"`
-	SourcePayload      datatypes.JSON `json:"source_payload" gorm:"type:jsonb;not null"`
-	Status             string         `json:"status" gorm:"type:varchar(20);not null;default:'initiated'"`
-	TemporalWorkflowId string         `json:"temporal_workflow_id" gorm:"type:varchar(255);default:null"`
-	TemporalRunId      string         `json:"temporal_run_id" gorm:"type:varchar(255);default:null"`
-	TemporalTaskQueue  string         `json:"temporal_task_queue" gorm:"type:varchar(255);default:'default'"`
-	AgentThreadId      string         `json:"agent_thread_id" gorm:"type:varchar(255);default:null"`
-	ActiveInterruptId  datatypes.UUID `json:"active_interrupt_id" gorm:"type:uuid;default:null"`
-	ResultSummary      string         `json:"result_summary" gorm:"type:text;default:null"`
-	Result             datatypes.JSON `json:"result" gorm:"type:jsonb;default:null"`
-	ErrorMessage       string         `json:"error_message" gorm:"type:text;default:null"`
+	Id                 datatypes.UUID  `json:"id" gorm:"primaryKey;type:uuid;default:uuid_generate_v4()"`
+	CreatedAt          time.Time       `json:"created_at" gorm:"autoCreateTime"`
+	UpdatedAt          time.Time       `json:"updated_at" gorm:"autoUpdateTime"`
+	CompletedAt        *time.Time      `json:"completed_at" gorm:"default:null"`
+	SourceType         string          `json:"source_type" gorm:"type:varchar(10);not null"`
+	SourceRef          string          `json:"source_ref" gorm:"type:varchar(255);not null;uniqueIndex"`
+	SourcePayload      datatypes.JSON  `json:"source_payload" gorm:"type:jsonb;not null;"`
+	Status             string          `json:"status" gorm:"type:varchar(20);not null;default:'initiated'"`
+	TemporalWorkflowId *string         `json:"temporal_workflow_id" gorm:"type:varchar(255);default:null"`
+	TemporalRunId      *string         `json:"temporal_run_id" gorm:"type:varchar(255);default:null"`
+	TemporalTaskQueue  string          `json:"temporal_task_queue" gorm:"type:varchar(255);default:'default'"`
+	AgentThreadId      *string         `json:"agent_thread_id" gorm:"type:varchar(255);default:null"`
+	ActiveInterruptId  *datatypes.UUID `json:"active_interrupt_id" gorm:"type:uuid;default:null"`
+	ResultSummary      *string         `json:"result_summary" gorm:"type:text;default:null"`
+	Result             *datatypes.JSON `json:"result" gorm:"type:jsonb;default:null"`
+	ErrorMessage       *string         `json:"error_message" gorm:"type:text;default:null"`
 }
 
 func (e *Entity) Marshal() ([]byte, error) {

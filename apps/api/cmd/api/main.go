@@ -41,7 +41,7 @@ func main() {
 	publisher := event.NewPublisher(cfg)
 	httpComponent := httpserver.NewHttpComponent(cfg, postgresclient, publisher, redisClient)
 	eventComponent := event.NewEventLoopComponent(cfg, postgresclient)
-	workerComponent := worker.NewWorkerComponent(redisClient,cfg)
+	workerComponent := worker.NewWorkerComponent(redisClient, postgresclient, cfg)
 	contrlr.AddComponent(eventComponent)
 	contrlr.AddComponent(httpComponent)
 	contrlr.AddComponent(workerComponent)

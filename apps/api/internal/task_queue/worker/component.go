@@ -14,13 +14,15 @@ type WorkerComponent struct {
 	server *asynq.Server
 	mux    *asynq.ServeMux
 	cfg *internal.Config
+	dbconn *client.PostgresClient
 }
 
-func NewWorkerComponent(redisconn *client.RedisClient, cfg *internal.Config) *WorkerComponent {
+func NewWorkerComponent(redisconn *client.RedisClient, dbconn *client.PostgresClient, cfg *internal.Config) *WorkerComponent {
 	server := asynq.NewServerFromRedisClient(redisconn.GetClient(), asynq.Config{})
 	return &WorkerComponent{
 		cfg: cfg,
 		server: server,
+		dbconn: dbconn,
 	}
 }
 
@@ -31,7 +33,7 @@ func (w *WorkerComponent) GetName() string {
 
 // Init implements [internal.Component].
 func (w *WorkerComponent) Init() {
-	handler := NewWorkerHandler(w.cfg)
+	handler := NewWorkerHandler(w.cfg, w.dbconn)
 	mux := asynq.NewServeMux()
 	mux.HandleFunc(string(taskqueue.SlackAppMention), handler.ProcessTask)
 	w.mux = mux

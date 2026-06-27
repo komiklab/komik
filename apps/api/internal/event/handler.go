@@ -1,15 +1,13 @@
 package event
 
 import (
-	"errors"
-
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/komiklab/komik/internal/audit"
 	"github.com/komiklab/komik/internal/client"
 	"github.com/komiklab/komik/internal/models"
 
 	//"github.com/komiklab/komik/internal/repositories"
-	"github.com/komiklab/komik/internal/utils"
+
 	"github.com/rs/zerolog/log"
 )
 
@@ -31,12 +29,20 @@ func (h *EventHandler) HandleAuditLog(msg *message.Message) error {
 	auditlogData := msg.Payload
 	auditlogModel := &models.AuditLog{}
 	err := auditlogModel.Unmarshal(auditlogData)
-	if utils.IsErrNotNil(err) {
+	// if utils.IsErrNotNil(err) {
+	// 	return err
+	// }
+	//err = h.auditLogRepo.Save(auditlogModel)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to unmarshal audit log")
 		return err
 	}
-	//err = h.auditLogRepo.Save(auditlogModel)
 	err = h.auditSrv.SaveAuditLog(auditlogModel)
-	if utils.IsErrNotNil(err) {
+	// if utils.IsErrNotNil(err) {
+	// 	return err
+	// }
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to save audit log")
 		return err
 	}
 	return nil
@@ -44,11 +50,8 @@ func (h *EventHandler) HandleAuditLog(msg *message.Message) error {
 
 func (h *EventHandler) HandleEntity(msg *message.Message) error {
 	log.Info().Msg("Received Entity log handle.")
+	log.Info().Msg("causation id should be " + msg.UUID)
 	entityData := msg.Payload
-	entityModel := &models.Entity{}
-	err := entityModel.Unmarshal(entityData)
-	if err != nil {
-		return err
-	}
-	return errors.New("for fun in HandleEntity")
+	log.Info().Msg("entity data is " + string(entityData))
+	return nil
 }

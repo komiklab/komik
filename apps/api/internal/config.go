@@ -13,8 +13,15 @@ type Config struct {
 	NatsURL             string `valid:"-" env:"NATS_URL" envDefault:"nats://localhost:4222"`
 	RedisDSN            string `valid:"-" env:"REDIS_DSN" envDefault:"redis://localhost:6381"`
 	PostLoginRedirect   string `valid:"-" env:"POST_LOGIN_REDIRECT" envDefault:"http://localhost:3000/"`
+	TemporalConfig      TemporalConfig
 	OauthConfig         OauthConfig
-	SlackIntegration SlackIntegration
+	SlackIntegration    SlackIntegration
+}
+
+type TemporalConfig struct {
+	Namespace   string `valid:"-" env:"TEMPORAL_NAMESPACE" envDefault:"default"`
+	TemporalUrl string `valid:"-" env:"TEMPORAL_URL" envDefault:"localhost:7233"`
+	TaskQueue   string `valid:"-" env:"TEMPORAL_TASK_QUEUE" envDefault:"komik-TaskQueue"`
 }
 
 type OauthConfig struct {
@@ -27,7 +34,7 @@ type OauthConfig struct {
 }
 
 type SlackIntegration struct {
-	BotToken string `valid:"-" env:"SLACK_BOT_TOKEN" envDefault:""`
+	BotToken      string `valid:"-" env:"SLACK_BOT_TOKEN" envDefault:""`
 	SigningSecret string `valid:"-" env:"SLACK_SIGNING_SECRET" envDefault:""`
 }
 
@@ -41,5 +48,5 @@ func NewConfig() *Config {
 		log.Fatal().Err(err).Msg("Failed to validate config")
 	}
 
-	return cfg	
+	return cfg
 }

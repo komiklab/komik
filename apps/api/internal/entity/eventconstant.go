@@ -1,6 +1,6 @@
 package entity
 
 const (
-	EventTypeEntityInitiated string = "EntityInitiated"
-	
+	EventTypeEntityInitiated  string = "EntityInitiated"
+	EventTypeEntityDispatched string = "EntityDispatched"
 )

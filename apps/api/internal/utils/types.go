@@ -12,3 +12,12 @@ func IsValidSourceType(sourceType string) bool {
 		return false
 	}
 }
+
+const (
+	SystemInitiator = "SYSTEM"
+)
+
+const (
+	InitiatedTopic  = "komik.entity.initiated"
+	DispatchedTopic = "komik.entity.dispatched"
+)

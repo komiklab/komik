@@ -1,12 +1,13 @@
 package repositories
 
 import (
+	"context"
+
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/komiklab/komik/internal/client"
 	"github.com/komiklab/komik/internal/models"
 	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 type EntityRepo struct {
@@ -14,15 +15,27 @@ type EntityRepo struct {
 	fwdpub *ForwarderPublisher
 }
 
-func (e *EntityRepo) Save(entity *models.Entity, envelope *message.Message) error {
+func (e *EntityRepo) GetEntityById(ctx context.Context, id string) (*models.Entity, error) {
+	gormdb := e.dbcon.GetClient()
+	var entity models.Entity
+	err := gormdb.Where("id = ?", id).First(&entity).Error
+	if err != nil {
+		log.Error().Err(err).Msgf("Entity with Id %s not found", id)
+		return nil, err
+	}
+	return &entity, nil
+}
+
+func (e *EntityRepo) Save(entity *models.Entity, envelope *message.Message, topic string) error {
 	gormdb := e.dbcon.GetClient()
 	return gormdb.Transaction(func(tx *gorm.DB) error {
-		result := tx.Clauses(clause.OnConflict{
-			Columns: []clause.Column{
-				{Name: "source_ref"},
-			},
-			DoNothing: true,
-		}).Create(entity)
+		result := tx.Save(entity)
+		// result := tx.Clauses(clause.OnConflict{
+		// 	Columns: []clause.Column{
+		// 		{Name: "source_ref"},
+		// 	},
+		// 	DoNothing: true,
+		// }).Save(entity)
 		if result.Error != nil {
 			return result.Error
 		}
@@ -30,7 +43,7 @@ func (e *EntityRepo) Save(entity *models.Entity, envelope *message.Message) erro
 			log.Warn().Msgf("Entity with Id %s, source ref %s already exists", entity.Id.String(), entity.SourceRef)
 			return nil
 		}
-		return e.fwdpub.Publish(tx, "komik.entity.initiated", envelope)
+		return e.fwdpub.Publish(tx, topic, envelope)
 	})
 }
 

@@ -16,8 +16,8 @@ type AuditLog struct {
 	InitiatorType string    `gorm:"type:varchar(255);not null" json:"initiator_type"`
 	ResourceType  string    `gorm:"type:varchar(255);not null" json:"resource_type"`
 	Severity      string    `gorm:"type:varchar(255);not null" json:"severity"`
-	Payload       string    `gorm:"serializer:json;not null" json:"-"`
-	Data          string    `gorm:"serializer:json;not null" json:"-"`
+	Payload       string    `gorm:"serializer:json;not null" json:"payload"`
+	Data          string    `gorm:"serializer:json;not null" json:"data"`
 	CausationId   string    `gorm:"type:string;default:'';not null" json:"causation_id"`
 }
 

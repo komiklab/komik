@@ -37,10 +37,11 @@ func main() {
 		models.EntityInterrupt{},
 	)
 	redisClient := client.NewRedisClient(cfg)
+	temporalClient := client.NewTemporalClient(cfg)
 	contrlr := controller.NewController(cfg)
 	publisher := event.NewPublisher(cfg)
 	httpComponent := httpserver.NewHttpComponent(cfg, postgresclient, publisher, redisClient)
-	eventComponent := event.NewEventLoopComponent(cfg, postgresclient)
+	eventComponent := event.NewEventLoopComponent(cfg, postgresclient, temporalClient)
 	workerComponent := worker.NewWorkerComponent(redisClient, postgresclient, cfg)
 	contrlr.AddComponent(eventComponent)
 	contrlr.AddComponent(httpComponent)

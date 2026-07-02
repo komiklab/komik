@@ -1,6 +1,8 @@
 package entity
 
 import (
+	"context"
+
 	"github.com/komiklab/komik/internal/models"
 	"github.com/looplab/fsm"
 )
@@ -17,6 +19,10 @@ const (
 type EntityTransitioner struct {
 	fsm    *fsm.FSM
 	entity *models.Entity
+}
+
+func (e *EntityTransitioner) Dispatch(ctx context.Context) error {
+	return e.fsm.Event(ctx, EntityEventDispatch)
 }
 
 func NewEntityTransitioner(entity *models.Entity) *EntityTransitioner {

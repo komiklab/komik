@@ -14,6 +14,8 @@ const (
 	AuditLogSubject = "komik.>"
 	AuditLogHandlerName = "komik-audit-handler"
 	EntitySubject = "komik.entity.>"
+	EntitySubjectDispatched = "komik.entity.dispatched"
+	EntitySubjectInitiated = "komik.entity.initiated"
 	EntityHandlerName = "komik-entity-handler"
 )
 

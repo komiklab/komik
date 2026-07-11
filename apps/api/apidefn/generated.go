@@ -20,6 +20,28 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
+// DetailedAgentModel defines model for DetailedAgentModel.
+type DetailedAgentModel struct {
+	AgentID     *openapi_types.UUID `json:"agentID,omitempty"`
+	Annotations *[]struct {
+		Name  string `json:"name"`
+		Value string `json:"value"`
+	} `json:"annotations,omitempty"`
+	Description *string `json:"description,omitempty"`
+	Env         *[]struct {
+		Name  string `json:"name"`
+		Value string `json:"value"`
+	} `json:"env,omitempty"`
+	Image           string                       `json:"image"`
+	ImagePullSecret *string                      `json:"imagePullSecret,omitempty"`
+	Name            string                       `json:"name"`
+	Resources       *AgentCreateRequestResources `json:"resources,omitempty"`
+	Secrets         *[]struct {
+		Name  string `json:"name"`
+		Value string `json:"value"`
+	} `json:"secrets,omitempty"`
+}
+
 // AdminCreateRequest defines model for adminCreateRequest.
 type AdminCreateRequest struct {
 	Password string `json:"password"`
@@ -29,6 +51,52 @@ type AdminCreateRequest struct {
 // AdminGetResponse defines model for adminGetResponse.
 type AdminGetResponse struct {
 	Exists bool `json:"exists"`
+}
+
+// AgentCreateRequest defines model for agentCreateRequest.
+type AgentCreateRequest struct {
+	Annotations *[]struct {
+		Name  string `json:"name"`
+		Value string `json:"value"`
+	} `json:"annotations,omitempty"`
+	Description *string `json:"description,omitempty"`
+	Env         *[]struct {
+		Name  string `json:"name"`
+		Value string `json:"value"`
+	} `json:"env,omitempty"`
+	Image           string                       `json:"image"`
+	ImagePullSecret *string                      `json:"imagePullSecret,omitempty"`
+	Name            string                       `json:"name"`
+	Resources       *AgentCreateRequestResources `json:"resources,omitempty"`
+	Secrets         *[]struct {
+		Name  string `json:"name"`
+		Value string `json:"value"`
+	} `json:"secrets,omitempty"`
+}
+
+// AgentCreateRequestResources defines model for agentCreateRequestResources.
+type AgentCreateRequestResources struct {
+	Cpu              *string `json:"cpu,omitempty"`
+	EphemeralStorage *string `json:"ephemeralStorage,omitempty"`
+	Memory           *string `json:"memory,omitempty"`
+	TimeoutSeconds   *int    `json:"timeoutSeconds,omitempty"`
+}
+
+// AgentCreateResponse defines model for agentCreateResponse.
+type AgentCreateResponse struct {
+	AgentID openapi_types.UUID `json:"agentID"`
+	Name    string             `json:"name"`
+}
+
+// AgentGetResponse defines model for agentGetResponse.
+type AgentGetResponse struct {
+	Agents *[]AgentModel `json:"agents,omitempty"`
+}
+
+// AgentModel defines model for agentModel.
+type AgentModel struct {
+	AgentID *openapi_types.UUID `json:"agentID,omitempty"`
+	Name    *string             `json:"name,omitempty"`
 }
 
 // AuditlogGetResponse defines model for auditlogGetResponse.
@@ -85,6 +153,9 @@ type PostHookSlackJSONBody map[string]interface{}
 // PostAdminJSONRequestBody defines body for PostAdmin for application/json ContentType.
 type PostAdminJSONRequestBody = AdminCreateRequest
 
+// PostAgentJSONRequestBody defines body for PostAgent for application/json ContentType.
+type PostAgentJSONRequestBody = AgentCreateRequest
+
 // PostAuthLoginJSONRequestBody defines body for PostAuthLogin for application/json ContentType.
 type PostAuthLoginJSONRequestBody = AdminCreateRequest
 
@@ -99,6 +170,15 @@ type ServerInterface interface {
 
 	// (POST /admin)
 	PostAdmin(ctx *echo.Context) error
+
+	// (GET /agent)
+	GetAgent(ctx *echo.Context) error
+
+	// (POST /agent)
+	PostAgent(ctx *echo.Context) error
+
+	// (GET /agent/{id})
+	GetAgentId(ctx *echo.Context, id openapi_types.UUID) error
 
 	// (GET /auditlog)
 	GetAuditlog(ctx *echo.Context, params GetAuditlogParams) error
@@ -142,6 +222,40 @@ func (w *ServerInterfaceWrapper) PostAdmin(ctx *echo.Context) error {
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.PostAdmin(ctx)
+	return err
+}
+
+// GetAgent converts echo context to params.
+func (w *ServerInterfaceWrapper) GetAgent(ctx *echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetAgent(ctx)
+	return err
+}
+
+// PostAgent converts echo context to params.
+func (w *ServerInterfaceWrapper) PostAgent(ctx *echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.PostAgent(ctx)
+	return err
+}
+
+// GetAgentId converts echo context to params.
+func (w *ServerInterfaceWrapper) GetAgentId(ctx *echo.Context) error {
+	var err error
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", ctx.Param("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetAgentId(ctx, id)
 	return err
 }
 
@@ -289,6 +403,9 @@ func RegisterHandlersWithOptions(router EchoRouter, si ServerInterface, options 
 
 	router.GET(options.BaseURL+"/admin", wrapper.GetAdmin, options.OperationMiddlewares["GetAdmin"]...)
 	router.POST(options.BaseURL+"/admin", wrapper.PostAdmin, options.OperationMiddlewares["PostAdmin"]...)
+	router.GET(options.BaseURL+"/agent", wrapper.GetAgent, options.OperationMiddlewares["GetAgent"]...)
+	router.POST(options.BaseURL+"/agent", wrapper.PostAgent, options.OperationMiddlewares["PostAgent"]...)
+	router.GET(options.BaseURL+"/agent/:id", wrapper.GetAgentId, options.OperationMiddlewares["GetAgentId"]...)
 	router.GET(options.BaseURL+"/auditlog", wrapper.GetAuditlog, options.OperationMiddlewares["GetAuditlog"]...)
 	router.POST(options.BaseURL+"/auth/login", wrapper.PostAuthLogin, options.OperationMiddlewares["PostAuthLogin"]...)
 	router.POST(options.BaseURL+"/auth/logout", wrapper.PostAuthLogout, options.OperationMiddlewares["PostAuthLogout"]...)
@@ -304,22 +421,27 @@ func RegisterHandlersWithOptions(router EchoRouter, si ServerInterface, options 
 // const string: with thousands of chunks the chained `+` fold is several
 // times slower for the Go compiler than parsing a slice literal.
 var swaggerSpec = []string{
-	"7FdRj9s2DP4rgbZHL/bdtS9+6w5YV7RbD93jEBx0FhOrZ4s+is4WBP7vgyTHiWM7yYYrkA17imN9IkXy",
-	"40d5KzIsKzRg2Ip0K2yWQyn9o1SlNvcEkuELvNRg2b2tCCsg1uAxlbT2DyTlnpdIpWSR7l9GgjcViFRY",
-	"Jm1WoolEbYGMLMFtOFpsIkHwUmsCJdLf98hob3DRWcSnr5Cxs+iP+R74C9gKjYXhIeFPbUN07eYnxAKk",
-	"GbhsgaNeaqW5wNVJR5qh7D98T7AUqfgu3mc5blMc70x29prOrySSG/e/BJZKshz6KnSpOUQny6oAkd6+",
-	"7fZrw7ACchZwubTQByZjOEaWRQ92k4wAm0FumhPZmk5VhkRQSNZoHrUaYUMkdnEPFmANhttdHenqWo8S",
-	"LoDD60lbayCr0RwgDjKjjWYtGWnqoHvApBvMspoI1KPk3qmVZPiBtWf5YBOBxZoymDZrYQ2keTPeTYOy",
-	"ABHSiT5xy48ZqolU+eUSrJUruNCja+IT/XJZCQ81owNDKXUxRI/w01doif7Emh2zxbuHD7N7NEwyYztb",
-	"Is0+YqmfRSQ6JoibeeIrV4GRlRapuJsn8zuvRpz748deetzTKnSYi81T+oMSqXgP/M4DfCV9Cvy22yQJ",
-	"HWAYjN8nq6rQmd8Zf7WBh0ElzmrIsfj5cBXYjHTFIZDPH10cb5I3r+a1z6MRl78iz37C2ijn+e0rxnvW",
-	"s+tbMrKYWaA10MxvCLSQK+tEPhRt0USiQjtStge0B3Xzc+9HVJvXLVl/rDb9QcRUQzMgzY376QcbrFxz",
-	"kptIdHPuZKPsMK69SJbAQM7QVrgGEy810EZEIqhAO/uOUxYdhHdyKDbRuNl2VF5kd2w0Lr5lo4/cP/7v",
-	"9bM03NFqx0TO4wJXQbRPtH/N+ScPuy4JSIYSEAp+dWnn/CjlWPNFOXe4o7jvktth3NfLuH7o4dYyLXuc",
-	"/wLf8oLQu4BNCsaVJxG1yuJMFsWTzJ7P5fOzVtn9DnvROPE33lOqP7hjjtuxLPnvGVr8l6juq9Sp67kS",
-	"7fX1svgjkYNUvoxb8QlD0P14j7PbXHXOcsTn2BYto6eF8WfE59+KQOZ/OoykUtotyeLh4AMssHPkc+mi",
-	"OXSx80FZ/hUa5MrjKuW/sh0m6EdNhUhFzlzZNI5lpedhdc5gOV7fCNfTrY3tThjCbdjJxu6Fo8HBf++s",
-	"t97eW5pF81cAAAD//w==",
+	"7FlLb9u4E/8qBv//o2rZSdODbt0Wmw3abILkWAQBI45tNhSpkCPvGoa++4Kk/JBFPbKIAXeRU2RyHpyZ",
+	"3zzIrEmqslxJkGhIsiYmXUBG3edXQMoFsM9zkHitGAi7SoW4mZHkx5r8X8OMJOR/8U5CXLHHdMdTRgNI",
+	"v2igCHfwUoBBUj5EBFc5kISop5+QIikjQlnGZZ0uWZNcqxw0cnBHzqkxfynN7PdM6YwiSXaLW6EGNZdz",
+	"K7QwoCXNwDIcbJYR0fBScA2MJD92lNFOYOsxLwHvwORKGmgeEv7mxju7Yn5SSgCVDZUVYVBL02kNPVRK",
+	"hRS5ku4nR8hMk6rF+ogsqSgG+KXyiacOHbVaoFrTlf3NwKSa5/ZcQb0gl6d0XJ7ROfiw0SwXdm++SPWY",
+	"q/hZZfxZ0Cf/4UKSLKchmDkht4UQ95BqwLq4bPXB+OUAZ6u9GowqdOq98rr8utuylhHxqk8IIWFuH4Zh",
+	"qXC375q6LWle1J1/MT3LQn6HfAEZaCruUekGAqaXPMSUQab0qk56dvHpOkiMPANV4D2kSjJTYzr/NJls",
+	"ObhEmIN2juk2vq3gOKKrr7WiWBScvQJvB0HZSKzoW8PSWQcdRR14g1tKEzPhA2zb1jE80lRZMI5CzTvN",
+	"3ho7zOpK5FZeoERlgJRRpE1dgme8Xm3OLprAioiazcxBWZqE6FAhFTWy6TCkdnmr3VWp0hqEa2GPnAVr",
+	"0MbuZgIvQWLF1RtjT+yXW2UtQZt609rzDJccOUWl2w66I2hVo9K00BrYI8XaqRlF+GDLRejomz7QLtbA",
+	"EjTH1UAQg9ZKd0wvdvsxVazFVW47A2OqojlAox2tOvJlWAj3J7ktMWSUiyZ1AJ8uQjPlTszRVe7Pt1ej",
+	"L0qipima0Uzp0Tfb520r2yCBTMcTF7kcJM05Scj5eDI+dzMiLtzxYzcQ2q+5zzBrm4P0FSMJuQT87Ahc",
+	"JJ0LHNvZZOIzQCJIx0fzXPDUccY/jcehrxK9NeRwJHXm1uYwcvPN2vFx8vHNtNZxFFD5p8LR76qQzGq+",
+	"eEN7ezXbvNWSipEBvQQ9cgweFnRuXINzMXkoI5IrEwjbrTJ7cXNTx2+Krd42ZAeXonoTRl1A2QDN1P6p",
+	"G+ulnLKTy4j47t6ZJY7gmFlyOLC8Z0lvAF1MerJkG7cjZEng6WBIlkyOc4I+3Jxo9LbpF685K3tz8Iq5",
+	"9qZpBgjauKcg2+Bcy9vcCBLiunQ9ENGebT39vHw4YtACD1vvuf4qtFSTeydWNjRhsLwUoFc7tPiLShdg",
+	"Om8wZRQWW91rBskN3WOOicLQZfEdhr0w3MBqg0RcxELN/YTd0YUKXHx3ZKc1r02a89pp9ooCFwcuVwUO",
+	"8rmlO7D7fHLWtPt0EVc33V8x28seLq7hmHNq7bb8y8waB05UnKVxSoV4oulznz9vOEu/bGgHtRP3PNFV",
+	"9RsPAmE5Bim+TtDDfwnqLkrb6toXol19HWZ/RBZAmQvjmnxX3ui6vYfeLU/aZwulnmMjKkS3F8Y/lHq+",
+	"Fx7M/7YZUca43aLidu+1zKMz8Lb1tjeiRlh+iRpkw2Mj5Z5ELY2vH4UWJCELxNwkcUxzPva7YwSD8XLq",
+	"/xvtZWz+GVY9XdiysVmwMNj77ZTV9qu5ZX/NjdTlQ/lPAAAA//8=",
 }
 
 // decodeSpec returns the embedded OpenAPI spec as raw JSON bytes,

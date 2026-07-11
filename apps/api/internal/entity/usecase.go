@@ -71,7 +71,7 @@ func (e *EntityService) createMsgEnvelope(entity *models.Entity, initiator strin
 	envelope := &models.AuditLog{
 		EventId:       eventID,
 		EventType:     eventtype,
-		OccurredAt:    time.Now().UnixMilli(),
+		OccurredAt:    time.Now().Unix(),
 		EventVersion:  1,
 		CorrelationId: entity.SourceRef,
 		InitiatorId:   initiator,

@@ -1,11 +1,17 @@
 import { Avatar, Group, Menu, Text, UnstyledButton } from "@mantine/core";
 import { IconLogout, IconSettings } from "@tabler/icons-react";
 import { usePostAuthLogout, useGetAuthMe } from "../../api/komik";
+import { useRouter } from "next/navigation";
 
 export default function UserMenu() {
+  const router = useRouter();
+  const redirectSettings = () => {
+    router.push("/settings");
+  };
   const { data: authdata } = useGetAuthMe();
-  const username = authdata?.status === 200 ? authdata.data.username : undefined;
-  console.log("username is " + username)
+  const username =
+    authdata?.status === 200 ? authdata.data.username : undefined;
+  console.log("username is " + username);
   const { mutate: logout } = usePostAuthLogout({
     mutation: {
       onSuccess: () => {
@@ -39,7 +45,7 @@ export default function UserMenu() {
 
       <Menu.Dropdown>
         <Menu.Label>{username}</Menu.Label>
-        <Menu.Item leftSection={<IconSettings size={16} />}>Settings</Menu.Item>
+        <Menu.Item leftSection={<IconSettings size={16} />} onClick={redirectSettings}>Settings</Menu.Item>
         <Menu.Divider />
         <Menu.Item
           color="red"

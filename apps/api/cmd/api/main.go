@@ -35,6 +35,7 @@ func main() {
 		models.UserRepresentation{},
 		models.Entity{},
 		models.EntityInterrupt{},
+		models.Agent{},
 	)
 	redisClient := client.NewRedisClient(cfg)
 	temporalClient := client.NewTemporalClient(cfg)

@@ -199,10 +199,8 @@ postgresql:
         init_database.sql: |
           -- initialize postgresql
           CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-          CREATE DATABASE temporal;
-          GRANT ALL PRIVILEGES ON DATABASE temporal TO komik;
-          CREATE DATABASE temporal_visibility;
-          GRANT ALL PRIVILEGES ON DATABASE temporal_visibility TO komik;
+          CREATE DATABASE temporal OWNER komik;
+          CREATE DATABASE temporal_visibility OWNER komik;
           
 temporal:
   enabled: true
@@ -227,6 +225,8 @@ temporal:
         datastores:
           default:
             sql:
+              manageSchema: true
+              createDatabase: false
               pluginName: postgres12_pgx
               driverName: postgres12_pgx
               databaseName: temporal
@@ -238,6 +238,8 @@ temporal:
                 enabled: false
           visibility:
             sql:
+              manageSchema: true
+              createDatabase: false
               pluginName: postgres12_pgx
               driverName: postgres12_pgx
               databaseName: temporal_visibility
@@ -247,12 +249,10 @@ temporal:
               password: komik
               tls:
                 enabled: false
+
   schema:
     useHelmHooks: false
-    jobAnnotations:
-      "helm.sh/hook": post-install,post-upgrade
-      "helm.sh/hook-weight": "5"
-      "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+
   frontend:
     replicaCount: 1
   history:

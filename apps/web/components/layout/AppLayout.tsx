@@ -6,9 +6,10 @@ import AppHeader from "./AppHeader";
 interface AppLayoutProps {
   children: React.ReactNode;
   navbar?: React.ReactNode;
+  header?: React.ReactNode;
 }
 
-export function AppLayout({ children, navbar }: AppLayoutProps) {
+export function AppLayout({ children, navbar, header }: AppLayoutProps) {
   return (
     <AppShell
       padding={0}
@@ -42,7 +43,7 @@ export function AppLayout({ children, navbar }: AppLayoutProps) {
       }}
     >
       <AppShell.Header>
-        <AppHeader />
+        {header ? header : <AppHeader />}
       </AppShell.Header>
 
       {navbar ? <AppShell.Navbar p="md">{navbar}</AppShell.Navbar> : null}

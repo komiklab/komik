@@ -1,8 +1,8 @@
-import { Badge, Box, Group, Text, ThemeIcon } from "@mantine/core";
+import { Box, Group, Text, ThemeIcon } from "@mantine/core";
 import { IconSparkles } from "@tabler/icons-react";
-import UserMenu from "../ui/UserMenu";
+import UserMenu from "../../ui/UserMenu";
 
-export default function AppHeader() {
+export default function SettingsHeader() {
   return (
     <Group h="100%" px="lg" justify="space-between" wrap="nowrap">
       <Group gap="sm" wrap="nowrap">
@@ -12,15 +12,14 @@ export default function AppHeader() {
         <Box>
           <Group gap="xs">
             <Text fw={800} fz="lg" lh={1}>
-              KomikLab
+              KomikLab Settings
             </Text>
           </Group>
           <Text fz="xs" c="dimmed" mt={3}>
-            Operations console
+            Settings
           </Text>
         </Box>
       </Group>
-      <UserMenu />
     </Group>
   );
 }

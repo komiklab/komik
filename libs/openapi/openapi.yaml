@@ -9,8 +9,84 @@ tags:
   - name: auth
   - name: hook
   - name: auditlog
+  - name: agent
 
 paths:
+  /agent/{id}:
+    get:
+      tags:
+        - agent
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DetailedAgentModel"
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/errorResponse"  
+  /agent:
+    get:
+      tags:
+        - agent
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/agentGetResponse"
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+    post:
+      tags:
+        - agent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/agentCreateRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+               $ref: "#/components/schemas/agentCreateResponse"
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/errorResponse"
   /hook/slack:
     post:
       tags:
@@ -204,6 +280,108 @@ paths:
                 $ref: "#/components/schemas/errorResponse"
 components:
   schemas:
+    agentGetResponse:
+      type: object
+      properties:
+        agents: 
+          type: array
+          items:
+            $ref: "#/components/schemas/agentModel"
+    agentModel:
+      type: object
+      properties:
+        agentID:
+          type: string
+          format: uuid
+        name:
+          type: string
+    DetailedAgentModel:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/agentModel'
+        - $ref: '#/components/schemas/agentCreateRequest'
+      
+    agentCreateResponse:
+      type: object
+      required:
+        - agentID
+        - name
+      properties:
+        agentID:
+          type: string
+          format: uuid
+        name:
+          type: string
+    agentCreateRequestResources:
+      type: object
+      properties:
+        memory:
+          type: string
+          example: "256Mi"
+        cpu:
+          type: string
+          example: "512m"
+        ephemeralStorage:
+          type: string
+          example: "1Gi"
+        timeoutSeconds:
+          type: integer
+          example: 3600
+    agentCreateRequest:
+      type: object
+      required:
+        - name
+        - image
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        image:
+          type: string
+          example: "ghcr.io/komiklab/komikagent:v1"
+        imagePullSecret:
+          type: string
+          example: "my-secret"
+        resources: 
+          type: object
+          $ref: '#/components/schemas/agentCreateRequestResources'
+        env:
+          type: array
+          items:
+            type: object
+            required:
+              - name
+              - value
+            properties:
+              name:
+                type: string
+              value:
+                type: string
+        secrets:
+          type: array
+          items:
+            type: object
+            required:
+              - name
+              - value
+            properties:
+              name:
+                type: string
+              value:
+                type: string
+        annotations:
+          type: array
+          items:
+            type: object
+            required:
+              - name
+              - value
+            properties:
+              name:
+                type: string
+              value:
+                type: string
     auditlogGetResponse:
       type: object
       properties:

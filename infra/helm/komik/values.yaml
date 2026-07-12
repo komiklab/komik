@@ -201,9 +201,26 @@ postgresql:
           CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
           CREATE DATABASE temporal OWNER komik;
           CREATE DATABASE temporal_visibility OWNER komik;
-          
-temporal:
+          CREATE DATABASE inngest OWNER komik;
+inngest:
   enabled: true
+  namespace:
+    create: false
+    name: komik
+  postgresql:
+    enabled: false
+  redis:
+    enabled: false
+  inngest:
+    eventKey: "komikevent"
+    signingKey: "8f2c9d41e7b5a3c6d8f0a1b2c3d4e5f6"
+    postgres: 
+      uri: "postgres://komik:komik@komik-postgresql.komik.svc.cluster.local:5432/inngest"
+    redis:      
+      uri: "redis://komik-redis-master.komik.svc.cluster.local:6379/0"     
+            
+temporal:
+  enabled: false
   server:
     replicaCount: 1
     additionalInitContainers:
@@ -270,6 +287,7 @@ temporal:
     config:
       auth: 
         enabled: false
+  
 
 
 

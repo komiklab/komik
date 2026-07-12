@@ -23,7 +23,7 @@ func (t *TemporalClient) StartWorkflow(ctx context.Context, workflowID string, w
 	workflowOpt := client.StartWorkflowOptions{
 		ID: workflowID,
 		TaskQueue: t.TaskQueue,
-		WorkflowExecutionTimeout: 24*time.Hour,
+		WorkflowExecutionTimeout: 365*24*time.Hour,
 		WorkflowIDReusePolicy: enums.WORKFLOW_ID_REUSE_POLICY_REJECT_DUPLICATE,
 	}
 	return t.Client.ExecuteWorkflow(ctx, workflowOpt, workflowName, workflowArgs...)

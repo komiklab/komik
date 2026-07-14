@@ -34,6 +34,7 @@ func (t *TemporalClient) Close() {
 }
 
 func NewTemporalClient(cfg *internal.Config) *TemporalClient {
+	return nil
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	Tempclient, err := client.DialContext(ctx, client.Options{

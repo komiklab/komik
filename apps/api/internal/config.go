@@ -16,6 +16,15 @@ type Config struct {
 	TemporalConfig      TemporalConfig
 	OauthConfig         OauthConfig
 	SlackIntegration    SlackIntegration
+	InngestConfig       InngestConfig
+}
+
+type InngestConfig struct {
+	EventKey   string `valid:"required" env:"INNGEST_EVENT_KEY" envDefault:""`
+	SigningKey string `valid:"required" env:"INNGEST_SIGNING_KEY" envDefault:""`
+	AppID      string `env:"INNGEST_APP_ID" envDefault:"komik-app"`
+	AppVersion string `env:"INNGEST_APP_VERSION" envDefault:""`
+	Host       string `env:"INNGEST_HOST" envDefault:"localhost:8288"`
 }
 
 type TemporalConfig struct {

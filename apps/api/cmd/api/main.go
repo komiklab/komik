@@ -13,6 +13,7 @@ import (
 	"github.com/komiklab/komik/internal/event"
 	httpserver "github.com/komiklab/komik/internal/httpServer"
 	"github.com/komiklab/komik/internal/models"
+	"github.com/komiklab/komik/internal/orchestrator"
 	"github.com/komiklab/komik/internal/task_queue/worker"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -39,6 +40,7 @@ func main() {
 	)
 	redisClient := client.NewRedisClient(cfg)
 	temporalClient := client.NewTemporalClient(cfg)
+	orchestrator := orchestrator.NewOrchestrator(cfg)
 	contrlr := controller.NewController(cfg)
 	publisher := event.NewPublisher(cfg)
 	httpComponent := httpserver.NewHttpComponent(cfg, postgresclient, publisher, redisClient)
@@ -54,4 +56,5 @@ func main() {
 	receivedSignal := <-stopchannel
 	log.Info().Msg("Received signal " + receivedSignal.String())
 	contrlr.Stop()
+	orchestrator.Stop()
 }

@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-export type SettingsSection = "agent";
+export type SettingsSection = "agent" | "hooks";
 
 interface SettingsSectionStore {
   currentSection: SettingsSection;

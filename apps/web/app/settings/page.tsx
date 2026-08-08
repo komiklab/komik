@@ -4,9 +4,10 @@ import { AppLayout } from "../../components/layout/AppLayout";
 import SettingsHeader from "../../components/layout/settings/SettingsHeader";
 import SettingsSidebarNav from "../../components/layout/settings/SettingsSidebarNav";
 import { SettingsSection, useSettingsSectionStore } from "../../stores/settingssection";
-import { IconClipboardList } from "@tabler/icons-react";
+import { IconClipboardList, IconFishHook } from "@tabler/icons-react";
 import { Stack, Box, Text, NavLink, Group, Badge, ThemeIcon } from "@mantine/core";
 import AgentPanel from "../../components/layout/agent/agentPanel";
+import HooksPanel from "../../components/layout/hooks/hookspanel";
 const navItems: Array<{
     value: SettingsSection
     label: string;
@@ -18,6 +19,12 @@ const navItems: Array<{
         label: "Agent Settings",
         description: "Configure the AI agent",
         icon: IconClipboardList,
+    },
+    {
+      value: "hooks",
+      label: "Hooks Settings",
+      description: "Configure the webhooks",
+      icon: IconFishHook,
     }
 ]
 export default function SettingsPage() {
@@ -73,6 +80,7 @@ export default function SettingsPage() {
   return (
     <AppLayout header={<SettingsHeader />} navbar={sidebarNav}>
     {currentSection === "agent" && <AgentPanel />}
+    {currentSection === "hooks" && <HooksPanel />}
     </AppLayout>
   );
 }

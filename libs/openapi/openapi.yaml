@@ -87,6 +87,51 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/errorResponse"
+  /hook:
+    get:
+      tags:
+        - hook
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/hookRegisteredList"
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+    post:
+      tags: 
+        - hook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/hookRegisterRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/hookregisterResponse"
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/errorResponse"
   /hook/slack:
     post:
       tags:
@@ -280,6 +325,62 @@ paths:
                 $ref: "#/components/schemas/errorResponse"
 components:
   schemas:
+    hookregisterResponse:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/hookRegisterRequest"
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: "The id of the hook."
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        secretKey:
+          type: string
+          description: "The secret key to send with the hook."
+          example: "T01A01B01C01"
+        createdAt:
+          type: string
+          format: date-time
+          description: "The creation time of the hook."
+          example: "2022-01-01T00:00:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: "The update time of the hook."
+          example: "2022-01-01T00:00:00Z"
+    hookRegisterRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+    hookRegisteredList:
+      type: object
+      properties:
+        hooks:
+          type: array
+          items:
+            $ref: "#/components/schemas/hookregisterResponse"
+    hookSendRequest:
+      type: object
+      required:
+        - type
+        - reference
+        - message
+      properties:
+        type:
+          type: string
+          enum: [ "custom.hook" ]
+        reference:
+          type: string
+          description: "The reference to send the hook to."
+          example: "T01A01B01C01"
+        message:
+          type: string
+          description: "The message to send to the hook."
+          example: "Hello, world!"
     agentGetResponse:
       type: object
       properties:

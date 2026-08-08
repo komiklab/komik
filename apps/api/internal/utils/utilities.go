@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"runtime"
 
 	"github.com/rs/zerolog/log"
@@ -19,3 +21,10 @@ func IsErrNotNil(err error) bool {
 	return false
 }
 
+func Generate32bitSecret() string {
+	b := make([]byte, 32)
+	if _, err := rand.Read(b); err != nil {
+		panic(err)
+	}
+	return hex.EncodeToString(b)	
+}

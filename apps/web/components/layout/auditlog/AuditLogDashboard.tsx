@@ -17,6 +17,8 @@ import {
 } from "@mantine/core";
 import {
   IconAlertTriangle,
+  IconChevronLeft,
+  IconChevronRight,
   IconClock,
   IconDatabaseSearch,
   IconRefresh,
@@ -185,7 +187,9 @@ export function AuditLogDashboard() {
   const total = metadata?.total ?? 0;
 
   const firstTimestamp = items[0]?.occurred_at;
-  const latestEvent = firstTimestamp ? formatDate(firstTimestamp) : "No events yet";
+  const latestEvent = firstTimestamp
+    ? formatDate(firstTimestamp)
+    : "No events yet";
 
   // keep referential stability for MRT
   const data = useMemo(() => items, [items]);
@@ -224,20 +228,57 @@ export function AuditLogDashboard() {
     mantineToolbarAlertBannerProps: auditLogQuery.isError
       ? {
           color: "red",
-          children: "Audit log could not be loaded. Check the API server and authentication state.",
+          children:
+            "Audit log could not be loaded. Check the API server and authentication state.",
         }
       : undefined,
-    // pagination labels
-    localization: {
-      rowsPerPage: "Rows per page",
-    } as never,
-    // page size options
-    paginationDisplayMode: "pages",
-    mantinePaginationProps: {
-      rowsPerPageOptions: ["10", "20", "50"],
-      showRowsPerPage: true,
-      color: "teal",
+    // // pagination labels
+    // localization: {
+    //   rowsPerPage: "Rows per page",
+    // } as never,
+    // // page size options
+    // paginationDisplayMode: "pages",
+    // mantinePaginationProps: {
+    //   rowsPerPageOptions: ["10", "20", "50"],
+    //   showRowsPerPage: true,
+    //   color: "teal",
+    // },
+    renderBottomToolbar: ({ table }) => {
+      const { pageIndex, pageSize } = table.getState().pagination;
+      const pageCount = Math.max(0, Math.ceil(total / pageSize));
+
+      return (
+        <Group justify="space-between" p="md">
+          <Text fz="sm" c="dimmed">
+            Showing {Math.min(pageIndex * pageSize + 1, total)} to{" "}
+            {Math.min((pageIndex + 1) * pageSize, total)} of {total} events
+          </Text>
+          <Group gap={4}>
+            <Tooltip label="Previous page">
+              <ActionIcon
+                variant="subtle"
+                color="teal"
+                onClick={() => table.setPageIndex(pageIndex - 1)}
+                disabled={pageIndex === 0 || auditLogQuery.isFetching}
+              >
+                <IconChevronLeft size={16} />
+              </ActionIcon>
+            </Tooltip>
+            <Tooltip label="Next page">
+              <ActionIcon
+                variant="subtle"
+                color="teal"
+                onClick={() => table.setPageIndex(pageIndex + 1)}
+                disabled={pageIndex >= pageCount - 1 || auditLogQuery.isFetching}
+              >
+                <IconChevronRight size={16} />
+              </ActionIcon>
+            </Tooltip>
+          </Group>
+        </Group>
+      );
     },
+
     // custom no-data state
     renderEmptyRowsFallback: () => (
       <Stack align="center" py={64} gap="xs">
@@ -267,7 +308,10 @@ export function AuditLogDashboard() {
             <IconDatabaseSearch size={24} />
           </ThemeIcon>
           <div>
-            <Title order={1} style={{ fontSize: "clamp(1.5rem, 3vw, 2.125rem)" }}>
+            <Title
+              order={1}
+              style={{ fontSize: "clamp(1.5rem, 3vw, 2.125rem)" }}
+            >
               Audit Log
             </Title>
             <Text c="dimmed" mt={4}>
@@ -318,7 +362,11 @@ export function AuditLogDashboard() {
             Latest event
           </Text>
           <Text fz="sm" fw={700} mt={11}>
-            {auditLogQuery.isLoading ? <Loader size="sm" color="teal" /> : latestEvent}
+            {auditLogQuery.isLoading ? (
+              <Loader size="sm" color="teal" />
+            ) : (
+              latestEvent
+            )}
           </Text>
         </Paper>
       </Group>

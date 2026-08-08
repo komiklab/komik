@@ -129,6 +129,19 @@ type ErrorResponse struct {
 	ErrorMessage *string `json:"error_message,omitempty"`
 }
 
+// HookRegisterRequest defines model for hookRegisterRequest.
+type HookRegisterRequest struct {
+	Name string `json:"name"`
+}
+
+// HookRegisteredList defines model for hookRegisteredList.
+type HookRegisteredList struct {
+	Hooks *[]HookregisterResponse `json:"hooks,omitempty"`
+}
+
+// HookregisterResponse defines model for hookregisterResponse.
+type HookregisterResponse = HookRegisterRequest
+
 // UserResponse defines model for userResponse.
 type UserResponse struct {
 	Id       *openapi_types.UUID  `json:"id,omitempty"`
@@ -158,6 +171,9 @@ type PostAgentJSONRequestBody = AgentCreateRequest
 
 // PostAuthLoginJSONRequestBody defines body for PostAuthLogin for application/json ContentType.
 type PostAuthLoginJSONRequestBody = AdminCreateRequest
+
+// PostHookJSONRequestBody defines body for PostHook for application/json ContentType.
+type PostHookJSONRequestBody = HookRegisterRequest
 
 // PostHookSlackJSONRequestBody defines body for PostHookSlack for application/json ContentType.
 type PostHookSlackJSONRequestBody PostHookSlackJSONBody
@@ -197,6 +213,12 @@ type ServerInterface interface {
 
 	// (GET /auth/oidc/login)
 	GetAuthOidcLogin(ctx *echo.Context) error
+
+	// (GET /hook)
+	GetHook(ctx *echo.Context) error
+
+	// (POST /hook)
+	PostHook(ctx *echo.Context) error
 
 	// (POST /hook/slack)
 	PostHookSlack(ctx *echo.Context) error
@@ -345,6 +367,24 @@ func (w *ServerInterfaceWrapper) GetAuthOidcLogin(ctx *echo.Context) error {
 	return err
 }
 
+// GetHook converts echo context to params.
+func (w *ServerInterfaceWrapper) GetHook(ctx *echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetHook(ctx)
+	return err
+}
+
+// PostHook converts echo context to params.
+func (w *ServerInterfaceWrapper) PostHook(ctx *echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.PostHook(ctx)
+	return err
+}
+
 // PostHookSlack converts echo context to params.
 func (w *ServerInterfaceWrapper) PostHookSlack(ctx *echo.Context) error {
 	var err error
@@ -412,6 +452,8 @@ func RegisterHandlersWithOptions(router EchoRouter, si ServerInterface, options 
 	router.GET(options.BaseURL+"/auth/me", wrapper.GetAuthMe, options.OperationMiddlewares["GetAuthMe"]...)
 	router.GET(options.BaseURL+"/auth/oidc/callback", wrapper.GetAuthOidcCallback, options.OperationMiddlewares["GetAuthOidcCallback"]...)
 	router.GET(options.BaseURL+"/auth/oidc/login", wrapper.GetAuthOidcLogin, options.OperationMiddlewares["GetAuthOidcLogin"]...)
+	router.GET(options.BaseURL+"/hook", wrapper.GetHook, options.OperationMiddlewares["GetHook"]...)
+	router.POST(options.BaseURL+"/hook", wrapper.PostHook, options.OperationMiddlewares["PostHook"]...)
 	router.POST(options.BaseURL+"/hook/slack", wrapper.PostHookSlack, options.OperationMiddlewares["PostHookSlack"]...)
 
 }
@@ -421,27 +463,31 @@ func RegisterHandlersWithOptions(router EchoRouter, si ServerInterface, options 
 // const string: with thousands of chunks the chained `+` fold is several
 // times slower for the Go compiler than parsing a slice literal.
 var swaggerSpec = []string{
-	"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",
+	"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",
+	"1we6CO98N8wa9/XWsHtmFtrqvvozAAD//w==",
 }
 
 // decodeSpec returns the embedded OpenAPI spec as raw JSON bytes,

@@ -8,15 +8,23 @@ export function RouteGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
-  const { data: adminData, isLoading: isAdminLoading, isError: isAdminError } = useGetAdmin();
+  const {
+    data: adminData,
+    isLoading: isAdminLoading,
+    isError: isAdminError,
+  } = useGetAdmin();
   const adminExists = adminData?.status === 200 && adminData.data.exists;
 
   // Only fetch session data if the admin actually exists
-  const { data: sessionData, isLoading: isSessionLoading, isError: isSessionError } = useGetAuthMe({
+  const {
+    data: sessionData,
+    isLoading: isSessionLoading,
+    isError: isSessionError,
+  } = useGetAuthMe({
     query: {
       enabled: !!adminExists,
       retry: false, // Do not retry if unauthorized
-    }
+    },
   });
 
   useEffect(() => {
@@ -49,11 +57,30 @@ export function RouteGuard({ children }: { children: React.ReactNode }) {
         router.replace("/signin");
       }
     }
+  }, [
+    isAdminLoading,
+    isAdminError,
+    adminExists,
+    isSessionLoading,
+    sessionData,
+    isSessionError,
+    router,
+    pathname,
+  ]);
 
-  }, [isAdminLoading, isAdminError, adminExists, isSessionLoading, sessionData, isSessionError, router, pathname]);
-
+  const isRedirecting =
+    (isAdminError && pathname != "/error") ||
+    (!isAdminLoading &&
+      !isAdminError &&
+      !adminExists &&
+      pathname != "/bootstrap") ||
+    (adminExists &&
+      !isSessionLoading &&
+      !isSessionError &&
+      !sessionData &&
+      pathname != "/signin");
   // Show loading state while checking either admin or active session
-  if (isAdminLoading || (adminExists && isSessionLoading)) {
+  if (isAdminLoading || (adminExists && isSessionLoading) || isRedirecting) {
     return <div>Loading...</div>;
   }
 

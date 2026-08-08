@@ -34,6 +34,9 @@ import type {
   ErrorResponse,
   GetAuditlogParams,
   GetAuthOidcCallbackParams,
+  HookRegisterRequest,
+  HookRegisteredList,
+  HookregisterResponse,
   PostHookSlackBody,
   UserResponse
 } from './schemas';
@@ -362,6 +365,208 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
         TContext
       > => {
       return useMutation(getPostAgentMutationOptions(options), queryClient);
+    }
+
+export type getHookResponse200 = {
+  data: HookRegisteredList
+  status: 200
+}
+
+export type getHookResponse404 = {
+  data: ErrorResponse
+  status: 404
+}
+
+export type getHookResponse500 = {
+  data: ErrorResponse
+  status: 500
+}
+
+export type getHookResponseSuccess = (getHookResponse200) & {
+  headers: Headers;
+};
+export type getHookResponseError = (getHookResponse404 | getHookResponse500) & {
+  headers: Headers;
+};
+
+export type getHookResponse = (getHookResponseSuccess | getHookResponseError)
+
+export const getGetHookUrl = () => {
+
+
+
+
+  return `http://localhost:65080/api/v1/hook`
+}
+
+export const getHook = async ( options?: RequestInit): Promise<getHookResponse> => {
+
+  return customInstance<getHookResponse>(getGetHookUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetHookQueryKey = () => {
+    return [
+    `http://localhost:65080/api/v1/hook`
+    ] as const;
+    }
+
+
+export const getGetHookQueryOptions = <TData = Awaited<ReturnType<typeof getHook>>, TError = ErrorResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getHook>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetHookQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getHook>>> = ({ signal }) => getHook({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getHook>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetHookQueryResult = NonNullable<Awaited<ReturnType<typeof getHook>>>
+export type GetHookQueryError = ErrorResponse
+
+
+export function useGetHook<TData = Awaited<ReturnType<typeof getHook>>, TError = ErrorResponse>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getHook>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getHook>>,
+          TError,
+          Awaited<ReturnType<typeof getHook>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetHook<TData = Awaited<ReturnType<typeof getHook>>, TError = ErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getHook>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getHook>>,
+          TError,
+          Awaited<ReturnType<typeof getHook>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetHook<TData = Awaited<ReturnType<typeof getHook>>, TError = ErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getHook>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetHook<TData = Awaited<ReturnType<typeof getHook>>, TError = ErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getHook>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetHookQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export type postHookResponse200 = {
+  data: HookregisterResponse
+  status: 200
+}
+
+export type postHookResponse500 = {
+  data: ErrorResponse
+  status: 500
+}
+
+export type postHookResponseSuccess = (postHookResponse200) & {
+  headers: Headers;
+};
+export type postHookResponseError = (postHookResponse500) & {
+  headers: Headers;
+};
+
+export type postHookResponse = (postHookResponseSuccess | postHookResponseError)
+
+export const getPostHookUrl = () => {
+
+
+
+
+  return `http://localhost:65080/api/v1/hook`
+}
+
+export const postHook = async (hookRegisterRequest: HookRegisterRequest, options?: RequestInit): Promise<postHookResponse> => {
+
+  return customInstance<postHookResponse>(getPostHookUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(hookRegisterRequest)
+  }
+);}
+
+
+
+
+export const getPostHookMutationOptions = <TError = ErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postHook>>, TError,{data: HookRegisterRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof postHook>>, TError,{data: HookRegisterRequest}, TContext> => {
+
+const mutationKey = ['postHook'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postHook>>, {data: HookRegisterRequest}> = (props) => {
+          const {data} = props ?? {};
+
+          return  postHook(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostHookMutationResult = NonNullable<Awaited<ReturnType<typeof postHook>>>
+    export type PostHookMutationBody = HookRegisterRequest
+    export type PostHookMutationError = ErrorResponse
+
+    export const usePostHook = <TError = ErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postHook>>, TError,{data: HookRegisterRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postHook>>,
+        TError,
+        {data: HookRegisterRequest},
+        TContext
+      > => {
+      return useMutation(getPostHookMutationOptions(options), queryClient);
     }
 
 export type postHookSlackResponse200 = {

@@ -132,6 +132,35 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/errorResponse"
+  /hook/{id}:
+    post:
+      tags:
+        - hook
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/hookSendRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: string
+        "500":
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/errorResponse"
   /hook/slack:
     post:
       tags:
@@ -366,13 +395,9 @@ components:
     hookSendRequest:
       type: object
       required:
-        - type
         - reference
         - message
       properties:
-        type:
-          type: string
-          enum: [ "custom.hook" ]
         reference:
           type: string
           description: "The reference to send the hook to."

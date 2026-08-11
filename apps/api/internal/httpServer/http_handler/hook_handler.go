@@ -85,3 +85,8 @@ func (h *HttpHandler) PostHookSlack(ctx *echo.Context) error {
 	}
 	return nil
 }
+
+// PostHookId implements [apidefn.ServerInterface].
+func (h *HttpHandler) PostHookId(ctx *echo.Context, id string) error {
+	panic("unimplemented")
+}

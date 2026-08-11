@@ -26,7 +26,6 @@ export * from './hookRegisteredList';
 export * from './hookRegisterRequest';
 export * from './hookregisterResponse';
 export * from './hookSendRequest';
-export * from './hookSendRequestType';
 export * from './postHookSlackBody';
 export * from './slackEventRequest';
 export * from './userResponse';

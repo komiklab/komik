@@ -17,8 +17,6 @@ type HooksRepo struct {
 	gormdb *gorm.DB
 }
 
-
-
 func NewHooksRepo(dbclient *client.PostgresClient) *HooksRepo {
 	return &HooksRepo{
 		gormdb: dbclient.GetClient(),
@@ -42,17 +40,17 @@ func (h *HooksRepo) CreateHook(hook *models.Hooks) error {
 // 	return nil
 // }
 
-// func (h *HooksRepo) FetchHook(id uuid.UUID) (*models.Hooks, error) {
-// 	var hook models.Hooks
-// 	err := h.gormdb.Where("id = ?", id).First(&hook).Error
-// 	if err != nil {
-// 		if errors.Is(err, gorm.ErrRecordNotFound) {
-// 			return nil, utils.NewAuthenticationError("hook not found", err)
-// 		}
-// 		return nil, utils.NewDatabaseError("failed to fetch hook", err)
-// 	}
-// 	return &hook, nil
-// }
+func (h *HooksRepo) FetchHook(name string) (*models.Hooks, error) {
+	var hook models.Hooks
+	err := h.gormdb.Where("name = ?", name).First(&hook).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, utils.NewAuthenticationError("hook not found", err)
+		}
+		return nil, utils.NewDatabaseError("failed to fetch hook", err)
+	}
+	return &hook, nil
+}
 
 func (h *HooksRepo) FetchHooks() ([]models.Hooks, error) {
 	var hooks []models.Hooks

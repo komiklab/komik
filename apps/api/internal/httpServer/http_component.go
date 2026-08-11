@@ -20,11 +20,11 @@ import (
 )
 
 type HttpComponent struct {
-	e         *echo.Echo
-	s         *http.Server
-	cfg       *internal.Config
-	dbclient  *client.PostgresClient
-	publisher *event.Publisher
+	e           *echo.Echo
+	s           *http.Server
+	cfg         *internal.Config
+	dbclient    *client.PostgresClient
+	publisher   *event.Publisher
 	redisclient *client.RedisClient
 }
 
@@ -38,12 +38,19 @@ func (h *HttpComponent) Init() {
 	h.e = echo.New()
 	h.e.Validator = &CustomValidator{}
 	h.addMiddleware()
+
+	sessionAuth := httphandler.NewSessionAuthenticator(h.redisclient)
+	hmacAuth := httphandler.NewHmacAuthenticator(h.dbclient)
+
 	handler := httphandler.NewHttpHandler(h.cfg, h.dbclient, h.publisher, h.redisclient)
 	apidefn.RegisterHandlersWithOptions(h.e, handler, apidefn.RegisterHandlersOptions{
-		BaseURL:              "/api/v1",
+		BaseURL: "/api/v1",
 		OperationMiddlewares: map[string][]echo.MiddlewareFunc{
-			"GetAuthMe":      {h.AuthMiddleware()},
-			"PostAuthLogout": {h.AuthMiddleware()},
+			"GetAuthMe":      {h.AuthMiddleware(sessionAuth)},
+			"PostAuthLogout": {h.AuthMiddleware(sessionAuth)},
+			"GetHook":        {h.AuthMiddleware(sessionAuth)},
+			"PostHook":       {h.AuthMiddleware(sessionAuth)},
+			"PostHookId":     {h.AuthMiddleware(hmacAuth)},
 		},
 	})
 }
@@ -72,12 +79,11 @@ func (h *HttpComponent) Stop(ctx context.Context) {
 	}
 }
 
-
 func NewHttpComponent(cfg *internal.Config, dbclient *client.PostgresClient, publisher *event.Publisher, redisclient *client.RedisClient) *HttpComponent {
 	return &HttpComponent{
-		cfg:       cfg,
-		dbclient:  dbclient,
-		publisher: publisher,
+		cfg:         cfg,
+		dbclient:    dbclient,
+		publisher:   publisher,
 		redisclient: redisclient,
 	}
 }
@@ -102,8 +108,8 @@ func (h *HttpComponent) addMiddleware() {
 	}))
 	h.e.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{
 		Skipper: func(c *echo.Context) bool {
-			// skip the csrf for /webhook path
-			return c.Path() == "/api/v1/hook/slack"
+			// skip the csrf for /webhook paths
+			return c.Path() == "/api/v1/hook/slack" || c.Path() == "/api/v1/hook/:id"
 		},
 		TokenLookup:    "header:X-CSRF-Token",
 		ContextKey:     "csrf",
@@ -142,27 +148,16 @@ func (c *CustomValidator) Validate(i any) error {
 	return nil
 }
 
-func (h *HttpComponent) AuthMiddleware() echo.MiddlewareFunc {
+func (h *HttpComponent) AuthMiddleware(authenticators httphandler.Authenticator) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(ctx *echo.Context) error {
-			// 1. Check for session cookie
-			cookie, err := ctx.Cookie(utils.SESSION_COOKIE_NAME)
-			if err != nil {
-				// Return 401 Unauthorized if cookie is missing
-				return ctx.JSON(http.StatusUnauthorized, utils.NewAuthenticationError("missing session cookie", err))
+			var lastErr error
+			err := authenticators.Authenticate(ctx)
+			if err == nil {
+				return next(ctx)
 			}
-			// 2. Validate with Redis
-			sessionID := cookie.Value
-			sessionData, err := h.redisclient.Get("session:" + sessionID)
-			if err != nil {
-				// Return 401 Unauthorized if session is invalid or expired in Redis
-				return ctx.JSON(http.StatusUnauthorized, utils.NewAuthenticationError("invalid or expired session", err))
-			}
-			// 3. (Optional) Inject the session data into the context so your GetAuthMe handler can use it
-			ctx.Set("user_session", sessionData)
-			ctx.Set("session_id", "session:"+sessionID)
-			// 4. Proceed to the actual handler (GetAuthMe)
-			return next(ctx)
+			lastErr = err
+			return ctx.JSON(http.StatusUnauthorized, lastErr)
 		}
 	}
 }
@@ -174,15 +169,15 @@ func (h *HttpComponent) LoggerContextMiddleware() echo.MiddlewareFunc {
 			if reqID == "" {
 				reqID = c.Request().Header.Get(echo.HeaderXRequestID)
 			}
-			
+
 			// Create a child logger with the request_id
 			logger := log.With().Str("request_id", reqID).Logger()
-			
+
 			// Inject logger into the request context
 			req := c.Request()
 			ctx := logger.WithContext(req.Context())
 			c.SetRequest(req.WithContext(ctx))
-			
+
 			return next(c)
 		}
 	}

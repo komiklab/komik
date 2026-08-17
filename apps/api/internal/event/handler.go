@@ -79,22 +79,22 @@ func (h *EventHandler) HandleEntityInitiated(msg *message.Message) error {
 		log.Error().Err(err).Msg("Failed to change the state")
 		return err
 	}
-	temporalDetails, err := h.temporalClient.StartWorkflow(ctx, entityId, "EntityTransitionWorkflow", entityData)
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to start temporal workflow")
-		return err
-	}
-	log.Info().Msg("Temporal workflow started " + temporalDetails.GetRunID())
-	workflowId := temporalDetails.GetID()
-	workflowRunID := temporalDetails.GetRunID()
-	entityData.TemporalRunId = &workflowRunID
-	entityData.TemporalWorkflowId = &workflowId
-	entityData.TemporalTaskQueue = h.temporalClient.TaskQueue
-	entityData.Status = entity.EntityStateDispatched
-	err = h.entitySrv.Update(entityData, map[string]string{"causationId": msg.UUID})
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to update entity")
-		return err
-	}
+	// temporalDetails, err := h.temporalClient.StartWorkflow(ctx, entityId, "EntityTransitionWorkflow", entityData)
+	// if err != nil {
+	// 	log.Error().Err(err).Msg("Failed to start temporal workflow")
+	// 	return err
+	// }
+	// log.Info().Msg("Temporal workflow started " + temporalDetails.GetRunID())
+	// workflowId := temporalDetails.GetID()
+	// workflowRunID := temporalDetails.GetRunID()
+	// entityData.TemporalRunId = &workflowRunID
+	// entityData.TemporalWorkflowId = &workflowId
+	// entityData.TemporalTaskQueue = h.temporalClient.TaskQueue
+	// entityData.Status = entity.EntityStateDispatched
+	// err = h.entitySrv.Update(entityData, map[string]string{"causationId": msg.UUID})
+	// if err != nil {
+	// 	log.Error().Err(err).Msg("Failed to update entity")
+	// 	return err
+	// }
 	return nil
 }

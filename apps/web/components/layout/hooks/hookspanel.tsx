@@ -71,7 +71,7 @@ export default function HooksPanel() {
 
   const handleSendMessage = async (values: {
     reference: string;
-    message: string;
+    message: any;
   }) => {
     if (!selectedHook) return;
     setIsSendPending(true);

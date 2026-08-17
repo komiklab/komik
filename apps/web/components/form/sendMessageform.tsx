@@ -1,6 +1,6 @@
 "use client";
 
-import { Alert, Button, Group, Paper, Stack, TextInput } from "@mantine/core";
+import { Alert, Button, Group, Paper, Stack, TextInput, JsonInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { IconAlertCircle } from "@tabler/icons-react";
 
@@ -20,11 +20,22 @@ export default function SendMessageForm({
     },
     validate: {
       reference: (value: string) => (value.trim().length === 0 ? "Reference is required" : null),
-      message: (value: string) => (value.trim().length === 0 ? "Message is required" : null),
+      message: (value: string) => {
+        if (value.trim().length === 0) return "Message is required";
+        try {
+          JSON.parse(value);
+          return null;
+        } catch (e) {
+          return "Invalid JSON format";
+        }
+      },
     },
   });
   const handleSubmit = (values: any) => {
-    onSubmit(values);
+    onSubmit({
+      ...values,
+      message: JSON.parse(values.message),
+    });
   };
   return (
     <Paper withBorder shadow="sm" p="lg" radius="md" maw={560} mx="auto">
@@ -41,9 +52,12 @@ export default function SendMessageForm({
             {...form.getInputProps('reference')}
             required
           />
-          <TextInput
+          <JsonInput
             label="Message"
-            placeholder="Enter message"
+            placeholder='{"key": "value"}'
+            formatOnBlur
+            autosize
+            minRows={4}
             {...form.getInputProps('message')}
             required
           />
@@ -57,4 +71,3 @@ export default function SendMessageForm({
     </Paper>
   );
 }
-  

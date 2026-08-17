@@ -12,7 +12,7 @@ type Entity struct {
 	CreatedAt          time.Time       `json:"created_at" gorm:"autoCreateTime"`
 	UpdatedAt          time.Time       `json:"updated_at" gorm:"autoUpdateTime"`
 	CompletedAt        *time.Time      `json:"completed_at" gorm:"default:null"`
-	SourceType         string          `json:"source_type" gorm:"type:varchar(10);not null"`
+	SourceType         string          `json:"source_type" gorm:"type:varchar(255);not null"`
 	SourceRef          string          `json:"source_ref" gorm:"type:varchar(255);not null;uniqueIndex"`
 	SourcePayload      datatypes.JSON  `json:"source_payload" gorm:"type:jsonb;not null;"`
 	Status             string          `json:"status" gorm:"type:varchar(20);not null;default:'initiated'"`

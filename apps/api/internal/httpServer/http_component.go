@@ -99,7 +99,10 @@ func (h *HttpComponent) addMiddleware() {
 			echo.HeaderContentType,
 			echo.HeaderAccept,
 			echo.HeaderAuthorization,
-			"X-CSRF-Token", // required so CORS preflight allows the CSRF header
+			// required so CORS preflight allows the CSRF header
+			"X-CSRF-Token",
+			"X-Signature",
+			"X-Timestamp", 
 		},
 		// ExposeHeaders allows the browser to expose these response headers to
 		// frontend JavaScript on cross-origin requests.
@@ -109,7 +112,7 @@ func (h *HttpComponent) addMiddleware() {
 	h.e.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{
 		Skipper: func(c *echo.Context) bool {
 			// skip the csrf for /webhook paths
-			return c.Path() == "/api/v1/hook/slack" || c.Path() == "/api/v1/hook/:id"
+			return c.Path() == "/api/v1/hook/slack" //|| c.Path() == "/api/v1/hook/:id"
 		},
 		TokenLookup:    "header:X-CSRF-Token",
 		ContextKey:     "csrf",

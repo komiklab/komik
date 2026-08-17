@@ -4,10 +4,13 @@
  * API Contracts for Komik
  * OpenAPI spec version: 1.0
  */
+import type { HookSendRequestMessage } from './hookSendRequestMessage';
 
 export interface HookSendRequest {
   /** The reference to send the hook to. */
   reference: string;
   /** The message to send to the hook. */
-  message: string;
+  message: HookSendRequestMessage;
+  /** The initiator of the hook. */
+  initiator?: string;
 }

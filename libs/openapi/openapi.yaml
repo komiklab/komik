@@ -403,9 +403,12 @@ components:
           description: "The reference to send the hook to."
           example: "T01A01B01C01"
         message:
-          type: string
+          type: object
           description: "The message to send to the hook."
-          example: "Hello, world!"
+        initiator: 
+          type: string
+          description: "The initiator of the hook."
+          example: "user"
     agentGetResponse:
       type: object
       properties:

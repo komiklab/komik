@@ -17,7 +17,8 @@ import (
 )
 
 type EntityService struct {
-	repo *repositories.EntityRepo
+	repo      *repositories.EntityRepo
+	hooksRepo *repositories.HooksRepo
 }
 
 func (e *EntityService) Update(entityData *models.Entity, metadata map[string]string) error {
@@ -33,9 +34,23 @@ func (e *EntityService) RetrieveEntityById(ctx context.Context, id string) (*mod
 	return e.repo.GetEntityById(ctx, id)
 }
 
+func (e *EntityService) ValidateSourceType(sourceType string) bool {
+	if utils.IsValidSourceType(sourceType) {
+		return true
+	}
+
+	_, err := e.hooksRepo.FetchHook(sourceType)
+	if err != nil {
+		log.Error().Err(err).Msgf("failed to fetch hook: %s", sourceType)
+		return false
+	}
+
+	return true
+}
+
 func (e *EntityService) InitiateEntity(ctx context.Context, sourceType, sourceRef, initiator string, sourcePayload []byte) error {
 	// first validate the sourcerType
-	if !utils.IsValidSourceType(sourceType) {
+	if !e.ValidateSourceType(sourceType) {
 		return errors.New("Not a valid sourceType: " + sourceType)
 	}
 	entity := &models.Entity{
@@ -55,7 +70,8 @@ func (e *EntityService) InitiateEntity(ctx context.Context, sourceType, sourceRe
 
 func NewEntityService(dbcon *client.PostgresClient) *EntityService {
 	return &EntityService{
-		repo: repositories.NewEntityRepo(dbcon),
+		repo:      repositories.NewEntityRepo(dbcon),
+		hooksRepo: repositories.NewHooksRepo(dbcon),
 	}
 }
 

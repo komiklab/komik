@@ -88,5 +88,28 @@ func (h *HttpHandler) PostHookSlack(ctx *echo.Context) error {
 
 // PostHookId implements [apidefn.ServerInterface].
 func (h *HttpHandler) PostHookId(ctx *echo.Context, id string) error {
-	panic("unimplemented")
+	var req apidefn.HookSendRequest
+	if bindErr := ctx.Bind(&req); bindErr != nil {
+		return ctx.JSON(http.StatusBadRequest, utils.NewBindError("failed to bind request", bindErr))
+	}
+	svc := hooks.NewHookService(h.dbclient)
+
+	if req.Message == nil {
+		return ctx.JSON(http.StatusBadRequest, utils.NewValidationError("message is missing", errors.New("message is missing")))
+	}
+
+	hook_input, hookerr := models.NewHookInputFromPayload(id, &req)
+	if hookerr != nil {
+		return ctx.JSON(http.StatusBadRequest, utils.NewBindError("failed to bind request", hookerr))
+	}
+
+	err := svc.SendMessage(ctx.Request().Context(), hook_input)
+	if err != nil {
+		komikErr, ok := err.(*utils.KomikError)
+		if !ok {
+			komikErr = utils.NewGeneralError(err)
+		}
+		return ctx.JSON(int(komikErr.StatusCode), komikErr)
+	}
+	return ctx.NoContent(http.StatusOK)
 }

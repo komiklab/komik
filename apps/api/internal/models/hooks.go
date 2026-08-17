@@ -12,7 +12,7 @@ type Hooks struct {
 	Name      string    `json:"name" valid:"required~Name is required" gorm:"not null;unique"`
 	CreatedAt time.Time `json:"createdAt" valid:"-" gorm:"autoCreateTime"`
 	UpdatedAt time.Time `json:"updatedAt" valid:"-" gorm:"autoUpdateTime"`
-	Secret    string    `json:"secret" valid:"required~Secret is required" gorm:"not null"`
+	Secret    string    `json:"secretKey" valid:"required~Secret is required" gorm:"not null"`
 }
 
 func NewHook(name string) *Hooks {

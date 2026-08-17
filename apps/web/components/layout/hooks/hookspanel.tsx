@@ -14,15 +14,30 @@ import {
   Group,
   Button,
 } from "@mantine/core";
-import { IconAlertCircle, IconPlus } from "@tabler/icons-react";
-import { useGetHook, usePostHook } from "../../../api/komik";
+import { IconAlertCircle, IconPlus, IconSend } from "@tabler/icons-react";
+import { useGetHook, usePostHook, postHookId } from "../../../api/komik";
 import { useDisclosure } from "@mantine/hooks";
 import { useForm } from "@mantine/form";
-import { isValueExpired } from "next/dist/client/components/segment-cache/cache-map";
+import SendMessageForm from "../../form/sendMessageform";
+import { useState } from "react";
+import { signHookRequest } from "../../../api/hmac";
 
 export default function HooksPanel() {
   const { data: hooksList, isLoading, isError, refetch } = useGetHook();
   const [opened, { open, close }] = useDisclosure(false);
+  const [sendOpened, { open: openSend, close: closeSend }] =
+    useDisclosure(false);
+  const [selectedHook, setSelectedHook] = useState<{
+    id: any;
+    secretKey: any;
+  } | null>(null);
+  const [sendError, setSendError] = useState<string | null>(null);
+  const [isSendPending, setIsSendPending] = useState(false);
+  // const [sendError, setIsSendError] = useState(false);
+  const handleSendClose = () => {
+    setSendError(null);
+    closeSend();
+  };
   const hooks = hooksList?.data?.hooks;
   const {
     mutate: createHook,
@@ -35,17 +50,47 @@ export default function HooksPanel() {
     resetCreate();
     close();
   };
-    const handleCreate = (payload: any) => {
-    createHook({ data: payload }, {
-      onSuccess: () => {
-        close();
-        refetch();
+  const handleCreate = (payload: any) => {
+    createHook(
+      { data: payload },
+      {
+        onSuccess: () => {
+          close();
+          refetch();
+        },
+        onError: (error) => {
+          console.error("Failed to create Hook", error);
+        },
       },
-      onError: (error) => {
-        console.error("Failed to create agent", error);
-      }
-    });
+    );
   };
+  function handleOpenSend(id: any, secretKey: any): void {
+    setSelectedHook({ id, secretKey });
+    openSend();
+  }
+
+  const handleSendMessage = async (values: {
+    reference: string;
+    message: string;
+  }) => {
+    if (!selectedHook) return;
+    setIsSendPending(true);
+    setSendError(null);
+    try {
+      const body = JSON.stringify(values);
+      const hmacheaders = await signHookRequest(selectedHook.secretKey, body);
+      await postHookId(selectedHook.id, values, {
+        headers: { ...hmacheaders },
+      });
+      handleSendClose();
+    } catch (err: any) {
+      console.error("failed to send message", err);
+      setSendError(err?.message || "Failed to send message");
+    } finally {
+      setIsSendPending(false);
+    }
+  };
+
   return (
     <>
       <Stack gap="md">
@@ -78,7 +123,19 @@ export default function HooksPanel() {
               </Accordion.Control>
 
               <Accordion.Panel>
-                <Code block>{JSON.stringify(hook, null, 2)}</Code>
+                <Stack gap="sm">
+                  <Code block>{JSON.stringify(hook, null, 2)}</Code>
+                  <Group justify="flex-end">
+                    <Button
+                      leftSection={<IconSend size={16} />}
+                      variant="light"
+                      size="xs"
+                      onClick={() => handleOpenSend(hook.name, hook.secretKey)}
+                    >
+                      Send Message
+                    </Button>
+                  </Group>
+                </Stack>
               </Accordion.Panel>
             </Accordion.Item>
           ))}
@@ -101,26 +158,34 @@ export default function HooksPanel() {
       >
         <IconPlus size={28} />
       </ActionIcon>
-      <Modal opened={opened} onClose={handleClose} title="Create Agent">
+      <Modal opened={opened} onClose={handleClose} title="Create Hook">
         <HooksCreateForm
           onSubmit={handleCreate}
           isLoading={isPending}
           error={isCreateError ? createError : null}
         />
       </Modal>
+      <Modal opened={sendOpened} onClose={handleSendClose} title="Send Message">
+        <SendMessageForm
+          onSubmit={handleSendMessage}
+          isLoading={isSendPending}
+          error={sendError ? { message: sendError } : null}
+        />
+      </Modal>
     </>
   );
 }
 const initialValues = {
-  name: '',
-}
+  name: "",
+};
 function HooksCreateForm({ onSubmit, isLoading, error }: any) {
   const form = useForm({
     initialValues,
     validate: {
-      name: (value:string) => (value.trim().length === 0? 'Name is required':null)
-    }
-  })
+      name: (value: string) =>
+        value.trim().length === 0 ? "Name is required" : null,
+    },
+  });
   const handleSubmit = (values) => {
     const payload = {
       name: values.name,
@@ -128,18 +193,22 @@ function HooksCreateForm({ onSubmit, isLoading, error }: any) {
     onSubmit ? onSubmit(payload) : console.log(payload);
   };
   return (
-      <Paper withBorder shadow="sm" p="lg" radius="md" maw={560} mx="auto">
-        <form onSubmit={form.onSubmit(handleSubmit)}>
-          <Stack gap="lg">
+    <Paper withBorder shadow="sm" p="lg" radius="md" maw={560} mx="auto">
+      <form onSubmit={form.onSubmit(handleSubmit)}>
+        <Stack gap="lg">
           {error && (
-            <Alert icon={<IconAlertCircle size={16} />} color="red" title="Error">
-              {error?.message || "An error occurred while creating the agent."}
+            <Alert
+              icon={<IconAlertCircle size={16} />}
+              color="red"
+              title="Error"
+            >
+              {error?.message || "An error occurred while creating the Hook."}
             </Alert>
           )}
           <TextInput
             label="Name"
             placeholder="Enter hook name"
-            {...form.getInputProps('name')}
+            {...form.getInputProps("name")}
             required
           />
           <Group justify="flex-end" mt="md">
@@ -147,8 +216,8 @@ function HooksCreateForm({ onSubmit, isLoading, error }: any) {
               Create
             </Button>
           </Group>
-          </Stack>
-          </form>
-      </Paper>
-  )
+        </Stack>
+      </form>
+    </Paper>
+  );
 }

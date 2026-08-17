@@ -8,6 +8,7 @@ import (
 	"github.com/komiklab/komik/internal/client"
 	"github.com/komiklab/komik/internal/entity"
 	"github.com/komiklab/komik/internal/models"
+	"github.com/komiklab/komik/internal/orchestrator"
 
 	//"github.com/komiklab/komik/internal/repositories"
 
@@ -16,19 +17,19 @@ import (
 
 type EventHandler struct {
 	//auditLogRepo *repositories.AuditLogRepository
-	auditSrv       *audit.AuditService
-	entitySrv      *entity.EntityService
-	temporalClient *client.TemporalClient
+	auditSrv           *audit.AuditService
+	entitySrv          *entity.EntityService
+	orchestratorClient *orchestrator.OrchestratorClient
 }
 
-func NewEventHandler(dbcon *client.PostgresClient, tempoClient *client.TemporalClient) *EventHandler {
+func NewEventHandler(dbcon *client.PostgresClient, tempoClient *orchestrator.OrchestratorClient) *EventHandler {
 	//auditLogRepo := repositories.NewAuditLogRepository(dbcon)
 	authsrv := audit.NewAuditService(dbcon)
 	entitySrv := entity.NewEntityService(dbcon)
 	return &EventHandler{
-		auditSrv:       authsrv,
-		entitySrv:      entitySrv,
-		temporalClient: tempoClient,
+		auditSrv:           authsrv,
+		entitySrv:          entitySrv,
+		orchestratorClient: tempoClient,
 	}
 }
 
@@ -79,6 +80,12 @@ func (h *EventHandler) HandleEntityInitiated(msg *message.Message) error {
 		log.Error().Err(err).Msg("Failed to change the state")
 		return err
 	}
+	resp, err := h.orchestratorClient.SendEvent(ctx, "entity/dispatched", entityId, entityData.StructToMap())
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to send event to orchestrator")
+		return err
+	}
+	log.Info().Msg("Event sent to orchestrator " + resp)
 	// temporalDetails, err := h.temporalClient.StartWorkflow(ctx, entityId, "EntityTransitionWorkflow", entityData)
 	// if err != nil {
 	// 	log.Error().Err(err).Msg("Failed to start temporal workflow")

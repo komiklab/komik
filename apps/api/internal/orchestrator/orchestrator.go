@@ -2,7 +2,6 @@ package orchestrator
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/inngest/inngestgo"
 	"github.com/inngest/inngestgo/connect"
@@ -17,28 +16,32 @@ type Orchestrator struct {
 }
 
 func NewOrchestrator(cfg *internal.Config) *Orchestrator {
+	println(cfg.InngestConfig.EventKey)
 	client, err := inngestgo.NewClient(inngestgo.ClientOpts{
 		AppID:      cfg.InngestConfig.AppID,
 		EventKey:   inngestgo.StrPtr(cfg.InngestConfig.EventKey),
 		SigningKey: inngestgo.StrPtr(cfg.InngestConfig.SigningKey),
 		AppVersion: inngestgo.StrPtr(cfg.InngestConfig.AppVersion),
-		APIBaseURL: inngestgo.StrPtr(fmt.Sprintf("http://%s", cfg.InngestConfig.Host)),
 	})
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to create Inngest client")
 	}
+	return &Orchestrator{
+		cfg:    cfg,
+		client: client,
+	}
+}
+
+func (o *Orchestrator) Start() {
 	conn, err := inngestgo.Connect(context.Background(), inngestgo.ConnectOpts{
-		Apps: []inngestgo.Client{client},
+		Apps: []inngestgo.Client{o.client},
 	})
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to connect to Inngest")
 	}
-	return &Orchestrator{
-		cfg:    cfg,
-		client: client,
-		conn:   conn,
-	}
+	o.conn = conn
 }
+
 
 func (o *Orchestrator) Stop() error {
 	return o.conn.Close()

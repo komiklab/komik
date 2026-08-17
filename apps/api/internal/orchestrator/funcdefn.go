@@ -1,13 +1,24 @@
 package orchestrator
 
-// import (
-// 	"github.com/inngest/inngestgo"
-// )
+import (
+	"context"
+
+	"github.com/inngest/inngestgo"
+)
 
 func (o *Orchestrator) RegisterFuncs() {
+	println("registering functions")
 	// register all the functions
-	// inngestgo.CreateFunction(o.client, inngestgo.FunctionOpts{
-	// 	Name: "handling-user-query",
-	// })
-	
+	inngestgo.CreateFunction(o.client,
+		inngestgo.FunctionOpts{
+			ID:   "handling-entity-transition",
+			Name: "Handling Entity Transition",
+		},
+		inngestgo.EventTrigger("entity/dispatched", nil),
+		func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
+			println("received")
+			return nil, nil
+		},
+	)
+
 }

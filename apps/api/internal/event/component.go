@@ -13,21 +13,22 @@ import (
 	"github.com/alexdrl/zerowater"
 	"github.com/komiklab/komik/internal"
 	"github.com/komiklab/komik/internal/client"
+	"github.com/komiklab/komik/internal/orchestrator"
 	"github.com/rs/zerolog/log"
 )
 
 type EventLoopComponent struct {
-	router         *message.Router
-	cfg            *internal.Config
-	dbcon          *client.PostgresClient
-	temporalClient *client.TemporalClient
+	router             *message.Router
+	cfg                *internal.Config
+	dbcon              *client.PostgresClient
+	orchestratorClient *orchestrator.OrchestratorClient
 }
 
-func NewEventLoopComponent(cfg *internal.Config, dbcon *client.PostgresClient, temporalClient *client.TemporalClient) *EventLoopComponent {
+func NewEventLoopComponent(cfg *internal.Config, dbcon *client.PostgresClient, orchestratorClient *orchestrator.OrchestratorClient) *EventLoopComponent {
 	return &EventLoopComponent{
-		cfg:            cfg,
-		dbcon:          dbcon,
-		temporalClient: temporalClient,
+		cfg:                cfg,
+		dbcon:              dbcon,
+		orchestratorClient: orchestratorClient,
 	}
 }
 
@@ -58,7 +59,7 @@ func (w *EventLoopComponent) Init() {
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to create entity subscriber")
 	}
-	handler := NewEventHandler(w.dbcon, w.temporalClient)
+	handler := NewEventHandler(w.dbcon, w.orchestratorClient)
 	w.router.AddConsumerHandler(AuditLogHandlerName, StreamName, auditSub.GetSubscriber(), handler.HandleAuditLog)
 	w.router.AddConsumerHandler(EntityHandlerName, StreamName, entityInitiatedSub.GetSubscriber(), handler.HandleEntityInitiated)
 	w.forwarder(logger)

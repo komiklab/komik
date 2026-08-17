@@ -34,6 +34,27 @@ func (e *Entity) Unmarshal(data []byte) error {
 	return json.Unmarshal(data, e)
 }
 
+func (e *Entity) StructToMap() map[string]interface{} {
+	return map[string]interface{}{
+		"id":                 e.Id,
+		"created_at":         e.CreatedAt,
+		"updated_at":         e.UpdatedAt,
+		"completed_at":       e.CompletedAt,
+		"source_type":        e.SourceType,
+		"source_ref":         e.SourceRef,
+		"source_payload":     e.SourcePayload,
+		"status":             e.Status,
+		"temporal_workflow_id": e.TemporalWorkflowId,
+		"temporal_run_id":      e.TemporalRunId,
+		"temporal_task_queue":  e.TemporalTaskQueue,
+		"agent_thread_id":      e.AgentThreadId,
+		"active_interrupt_id":  e.ActiveInterruptId,
+		"result_summary":     e.ResultSummary,
+		"result":             e.Result,
+		"error_message":      e.ErrorMessage,
+	}
+}
+
 type EntityInterrupt struct {
 	Id              datatypes.UUID `json:"id" gorm:"primaryKey;type:uuid;default:uuid_generate_v4()"`
 	EntityID        datatypes.UUID `json:"entity_id" gorm:"type:uuid;not null;index"`

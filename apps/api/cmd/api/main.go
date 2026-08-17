@@ -40,16 +40,19 @@ func main() {
 		models.Hooks{},
 	)
 	redisClient := client.NewRedisClient(cfg)
-	temporalClient := client.NewTemporalClient(cfg)
-	orchestrator := orchestrator.NewOrchestrator(cfg)
+	//temporalClient := client.NewTemporalClient(cfg)
 	contrlr := controller.NewController(cfg)
 	publisher := event.NewPublisher(cfg)
+	orchestratorComponent := orchestrator.NewOrchestratorComponent(cfg)
+	orchestratorClient := orchestratorComponent.GetOrchestratorClient()
 	httpComponent := httpserver.NewHttpComponent(cfg, postgresclient, publisher, redisClient)
-	eventComponent := event.NewEventLoopComponent(cfg, postgresclient, temporalClient)
+	eventComponent := event.NewEventLoopComponent(cfg, postgresclient, orchestratorClient)
 	workerComponent := worker.NewWorkerComponent(redisClient, postgresclient, cfg)
+	
 	contrlr.AddComponent(eventComponent)
 	contrlr.AddComponent(httpComponent)
 	contrlr.AddComponent(workerComponent)
+	contrlr.AddComponent(orchestratorComponent)
 	contrlr.Init()
 	contrlr.Start()
 	stopchannel := make(chan os.Signal, 1)
@@ -57,5 +60,4 @@ func main() {
 	receivedSignal := <-stopchannel
 	log.Info().Msg("Received signal " + receivedSignal.String())
 	contrlr.Stop()
-	orchestrator.Stop()
 }

@@ -1,9 +1,16 @@
 "use client";
 
 import { Badge, Box, Group, NavLink, Stack, Text, ThemeIcon } from "@mantine/core";
-import { IconClipboardList, IconInbox, IconTimelineEvent } from "@tabler/icons-react";
+import {
+  IconClipboardList,
+  IconFishHook,
+  IconInbox,
+  IconTimelineEvent,
+} from "@tabler/icons-react";
 import { AppLayout } from "../components/layout/AppLayout";
+import AgentPanel from "../components/layout/agent/agentPanel";
 import { AuditLogDashboard } from "../components/layout/auditlog/AuditLogDashboard";
+import HooksPanel from "../components/layout/hooks/hookspanel";
 import { InboxPanel } from "../components/layout/inbox/InboxPanel";
 import { useUiStore, type WorkspaceSection } from "../stores/ui";
 import { RouteGuard } from "../providers/RouteGuard";
@@ -25,6 +32,18 @@ const navItems: Array<{
     label: "Inbox",
     description: "Incoming work queue preview",
     icon: IconInbox,
+  },
+  {
+    value: "agent",
+    label: "Agents",
+    description: "Configure AI agents",
+    icon: IconClipboardList,
+  },
+  {
+    value: "hooks",
+    label: "Hooks",
+    description: "Configure webhooks",
+    icon: IconFishHook,
   },
 ];
 
@@ -107,6 +126,8 @@ export default function HomePage() {
     <AppLayout navbar={sidebarNav}>
       {currentSection === "audit-log" && <AuditLogDashboard />}
       {currentSection === "inbox" && <InboxPanel />}
+      {currentSection === "agent" && <AgentPanel />}
+      {currentSection === "hooks" && <HooksPanel />}
     </AppLayout>
 
     </RouteGuard>

@@ -16,7 +16,6 @@ import {
   Tooltip,
 } from "@mantine/core";
 import {
-  IconAlertTriangle,
   IconChevronLeft,
   IconChevronRight,
   IconClock,

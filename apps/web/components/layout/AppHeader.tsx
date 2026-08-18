@@ -1,4 +1,4 @@
-import { Badge, Box, Group, Text, ThemeIcon } from "@mantine/core";
+import { Box, Group, Text, ThemeIcon } from "@mantine/core";
 import { IconSparkles } from "@tabler/icons-react";
 import UserMenu from "../ui/UserMenu";
 

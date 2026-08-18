@@ -1,11 +1,14 @@
-import { Avatar, Group, Menu, Text, UnstyledButton } from "@mantine/core";
+import { Avatar, Group, Menu, UnstyledButton } from "@mantine/core";
 import { IconLogout, IconSettings } from "@tabler/icons-react";
 import { usePostAuthLogout, useGetAuthMe } from "../../api/komik";
 import { useRouter } from "next/navigation";
+import { useUiStore } from "../../stores/ui";
 
 export default function UserMenu() {
   const router = useRouter();
+  const setCurrentSection = useUiStore((state) => state.setCurrentSection);
   const redirectSettings = () => {
+    setCurrentSection("agent");
     router.push("/settings");
   };
   const { data: authdata } = useGetAuthMe();

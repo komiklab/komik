@@ -22,24 +22,13 @@ import (
 
 // DetailedAgentModel defines model for DetailedAgentModel.
 type DetailedAgentModel struct {
-	AgentID     *openapi_types.UUID `json:"agentID,omitempty"`
-	Annotations *[]struct {
-		Name  string `json:"name"`
-		Value string `json:"value"`
-	} `json:"annotations,omitempty"`
-	Description *string `json:"description,omitempty"`
-	Env         *[]struct {
-		Name  string `json:"name"`
-		Value string `json:"value"`
-	} `json:"env,omitempty"`
-	Image           string                       `json:"image"`
-	ImagePullSecret *string                      `json:"imagePullSecret,omitempty"`
-	Name            string                       `json:"name"`
-	Resources       *AgentCreateRequestResources `json:"resources,omitempty"`
-	Secrets         *[]struct {
-		Name  string `json:"name"`
-		Value string `json:"value"`
-	} `json:"secrets,omitempty"`
+	AgentID      *openapi_types.UUID           `json:"agentID,omitempty"`
+	Capabilities []string                      `json:"capabilities"`
+	Description  string                        `json:"description"`
+	Endpoint     string                        `json:"endpoint"`
+	Name         string                        `json:"name"`
+	Parameters   []AgentCreateRequestParameter `json:"parameters"`
+	Tags         *[]string                     `json:"tags,omitempty"`
 }
 
 // AdminCreateRequest defines model for adminCreateRequest.
@@ -55,31 +44,19 @@ type AdminGetResponse struct {
 
 // AgentCreateRequest defines model for agentCreateRequest.
 type AgentCreateRequest struct {
-	Annotations *[]struct {
-		Name  string `json:"name"`
-		Value string `json:"value"`
-	} `json:"annotations,omitempty"`
-	Description *string `json:"description,omitempty"`
-	Env         *[]struct {
-		Name  string `json:"name"`
-		Value string `json:"value"`
-	} `json:"env,omitempty"`
-	Image           string                       `json:"image"`
-	ImagePullSecret *string                      `json:"imagePullSecret,omitempty"`
-	Name            string                       `json:"name"`
-	Resources       *AgentCreateRequestResources `json:"resources,omitempty"`
-	Secrets         *[]struct {
-		Name  string `json:"name"`
-		Value string `json:"value"`
-	} `json:"secrets,omitempty"`
+	Capabilities []string                      `json:"capabilities"`
+	Description  string                        `json:"description"`
+	Endpoint     string                        `json:"endpoint"`
+	Name         string                        `json:"name"`
+	Parameters   []AgentCreateRequestParameter `json:"parameters"`
+	Tags         *[]string                     `json:"tags,omitempty"`
 }
 
-// AgentCreateRequestResources defines model for agentCreateRequestResources.
-type AgentCreateRequestResources struct {
-	Cpu              *string `json:"cpu,omitempty"`
-	EphemeralStorage *string `json:"ephemeralStorage,omitempty"`
-	Memory           *string `json:"memory,omitempty"`
-	TimeoutSeconds   *int    `json:"timeoutSeconds,omitempty"`
+// AgentCreateRequestParameter defines model for agentCreateRequestParameter.
+type AgentCreateRequestParameter struct {
+	Description string `json:"description"`
+	Required    *bool  `json:"required,omitempty"`
+	Type        string `json:"type"`
 }
 
 // AgentCreateResponse defines model for agentCreateResponse.
@@ -498,32 +475,31 @@ func RegisterHandlersWithOptions(router EchoRouter, si ServerInterface, options 
 // const string: with thousands of chunks the chained `+` fold is several
 // times slower for the Go compiler than parsing a slice literal.
 var swaggerSpec = []string{
-	"7Fpfb9s4Ev8qAu8e5Vhy/vROb2mK6wVtt0HSpy2CghHHFhtJVMmRu0ag774gKcuWRcnKIl64iwAFaonD",
-	"4cz85h9HeSKxyAqRQ46KRE9ExQlk1Px8B0h5CuxyATl+EgxS/Zam6ec5ib4+kX9LmJOI/Gu64TCtt0/p",
-	"Zk/ljyC9kkARbuFHCQpJde8TXBVAIiIevkOMpPIJZRnP23TREymkKEAiByNyQZX6KSTTv+dCZhRJtHnZ",
-	"MFUoeb7QTEsFMqcZ6A07i5VPJPwouQRGoq8bSn/DsFfM94C3oAqRK+gKCX9wZY1db34QIgWad46sCZ2n",
-	"dI3WOYfmuUCKXOTmkSNkqkvVo71PljQtR9iltomldolav6BS0pV+ZqBiyQstl/NcyJfHJC7P6AIsbDQr",
-	"Ur22SGJ5wsX0UWT8MaUP9oeBJFqGLjczTG7KNL2DWAK22WWribKvHTt79ZWgRClja5Xnxddts7XyiT36",
-	"iDzEvdvCMC4UbrdN09YlLsq28c/DWeayOxQJZCBpeodCdjwgfM9dmzLIhFy1SWfnF5+cxMgzECXeQSxy",
-	"plqbTi+CoNnBc4QFSGOYYeX7Eo4hun7XSoplydkz/G0HlDXHmr4XlsE8aCjajje6pHR9xi1AU7YOYZHu",
-	"kSXjmIrFoNqNsuO0rlk2/BwpKgOkjCLtnpXyjLezzey861g+EfO52klLgYsOBdK0RRaO89Qha/WbKhZS",
-	"QmpK2DfOnDlorXc3gJeQY71rL8aW2L7u5bUEqdpFa8syPOfIKQrZJ+iGoPcYEcellMC+UWxJzSjCRKcL",
-	"l+jrOtDPVsESJMfVSCcGKYUc6F708rdYsB5TmeUMlKqT5ogTEyEeb2HBFYLs7WbGJabedLR9BrCP3HWE",
-	"phkfmZpaNlL3RWefvneQs15dG1/RD61+iXxJwGuWPTH3MAFPMzwh/lbV0d2qu0I1wHT51oseCk9BzvT/",
-	"29w7ekiYg4Q87mHXLG8Y1tw8FG1xvwThZRC+DcKrwNE/7WC8OXajTx/kHYBG32BcTqnvJTsZypRedolu",
-	"E5hlLnJPR28/WrNgNpsE4SQIvwRBZP79TvyRCcDmG4eXsP4Dw9kpnJ1fvJnAf/77MAln7HRCz84vJmez",
-	"i4vwLHxzFgTBtgB9edM2jx9g5RbBLnuPsGpc4CfHpEeoYSfwSVmwIVvb5cNZ2hXJOswGKv244rN9B22I",
-	"IaM8HSNEZWrLXJjcyNFoeXlz7V2JHCWNUXlzIb0P+oaim/B1DSPhSWBqTgE5LTiJyOlJcHJqbreYGPGn",
-	"5iqrfy1sb6B1M+58zUhE3gNeGgJTg4wJzLZZENjanSPkZh8tipTHZuf0u7IV1IbZ3u5n9zJt1G1j//mD",
-	"1uMsOHuxU9sV0HHkbwK9/4kyZ/rk8xfUd+/JuuOQOU09BXIJ0jMbrFvQhTKtucHkvvJJIZQDthuhtnAz",
-	"ee2tYKuXhWxnnNPO4ChLqDpOE3aj2nI5ZiNXPrH3ksEoMQSHjJLdq9ZrlOwF0GCyJ0oa3A4QJY6h55go",
-	"CQ4jwT6/OVL0mvCbPnFW7Y3Ba2bKm6QZIEhlWkBd4EzJW88yImKqdBsIf0u3PfVc94gHA80xkn+N9Wd5",
-	"Sz1zGPSVNY3bWX6UIFcbb7EjliGHGZy9VL6bbT2RGcXXNYE5pBe6xlyvbrjXDddutfZETKapWNgOe6AK",
-	"lZh8NGTH1a8F3X7tOGtFicmOyUWJo2yu6Xb0Pg1mXb2P1+PaqtsrZn/aw+QTHLJPbd2Wf5leY8eIgrN4",
-	"GtM0faDx4z57fuYsvlrTjionZrA6lPU7AwE3H4UUn8fo/p/k6galJrvug2iTX8fp75MEKDMwPpGPwird",
-	"1nfXutVR2ywRYtCX/6/XD5gZHNP514ZiH34GtOErbIPby/cNzvn433uFdX+B+UXqSo3eOvqmKq3ryTCa",
-	"d6ktJX8VUsoY10s0vdmaVdva4JgsvyyYnaT4SyK1njUMA/UywwZnkT5MMG9/kXzFfgd7861L01ggS5mS",
-	"iCSIhYqmU1rwE7t6gqBwugztXzBaHutP1/XQWDds6xe6AG89m8Na6/WNcfudGWZU99WfAQAA//8=",
+	"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",
+	"H3QD3vtuhLXOyxvj/m9mmbG72f0ZAAD//w==",
 }
 
 // decodeSpec returns the embedded OpenAPI spec as raw JSON bytes,

@@ -4,18 +4,13 @@
  * API Contracts for Komik
  * OpenAPI spec version: 1.0
  */
-import type { AgentCreateRequestAnnotationsItem } from './agentCreateRequestAnnotationsItem';
-import type { AgentCreateRequestEnvItem } from './agentCreateRequestEnvItem';
-import type { AgentCreateRequestResources } from './agentCreateRequestResources';
-import type { AgentCreateRequestSecretsItem } from './agentCreateRequestSecretsItem';
+import type { AgentCreateRequestParameter } from './agentCreateRequestParameter';
 
 export interface AgentCreateRequest {
   name: string;
-  description?: string;
-  image: string;
-  imagePullSecret?: string;
-  resources?: AgentCreateRequestResources;
-  env?: AgentCreateRequestEnvItem[];
-  secrets?: AgentCreateRequestSecretsItem[];
-  annotations?: AgentCreateRequestAnnotationsItem[];
+  description: string;
+  endpoint: string;
+  capabilities: string[];
+  parameters: AgentCreateRequestParameter[];
+  tags?: string[];
 }

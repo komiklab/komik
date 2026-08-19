@@ -4,10 +4,11 @@ import (
 	"context"
 
 	"github.com/inngest/inngestgo"
+	"github.com/rs/zerolog/log"
 )
 
 func (o *Orchestrator) RegisterFuncs() {
-	println("registering functions")
+	log.Debug().Msg("registering functions")
 	// register all the functions
 	inngestgo.CreateFunction(o.client,
 		inngestgo.FunctionOpts{

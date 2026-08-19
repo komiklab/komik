@@ -441,76 +441,46 @@ components:
           format: uuid
         name:
           type: string
-    agentCreateRequestResources:
-      type: object
-      properties:
-        memory:
-          type: string
-          example: "256Mi"
-        cpu:
-          type: string
-          example: "512m"
-        ephemeralStorage:
-          type: string
-          example: "1Gi"
-        timeoutSeconds:
-          type: integer
-          example: 3600
     agentCreateRequest:
       type: object
       required:
         - name
-        - image
+        - endpoint
+        - description
+        - parameters
+        - capabilities
       properties:
         name:
           type: string
         description:
           type: string
-        image:
+        endpoint:
           type: string
-          example: "ghcr.io/komiklab/komikagent:v1"
-        imagePullSecret:
+        capabilities:
+          type: array
+          items:
+            type: string
+        parameters:
+          type: array
+          items:
+            $ref: "#/components/schemas/agentCreateRequestParameter"
+        tags: 
+          type: array
+          items:
+            type: string
+    agentCreateRequestParameter:
+      type: object
+      required:
+        - description
+        - type
+      properties:
+        type:
           type: string
-          example: "my-secret"
-        resources: 
-          type: object
-          $ref: '#/components/schemas/agentCreateRequestResources'
-        env:
-          type: array
-          items:
-            type: object
-            required:
-              - name
-              - value
-            properties:
-              name:
-                type: string
-              value:
-                type: string
-        secrets:
-          type: array
-          items:
-            type: object
-            required:
-              - name
-              - value
-            properties:
-              name:
-                type: string
-              value:
-                type: string
-        annotations:
-          type: array
-          items:
-            type: object
-            required:
-              - name
-              - value
-            properties:
-              name:
-                type: string
-              value:
-                type: string
+        description:
+          type: string
+        required:
+          type: boolean
+
     auditlogGetResponse:
       type: object
       properties:

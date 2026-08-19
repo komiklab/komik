@@ -17,7 +17,7 @@ import { AgentCreateForm } from "../../form/agentCreateForm";
 
 export default function AgentPanel() {
   const { data: agentsList, isLoading, isError, refetch } = useGetAgent();
-  const agents = agentsList?.data?.agents;
+  const agents = agentsList?.data && "agents" in agentsList.data ? agentsList.data.agents ?? [] : [];
   const [opened, { open, close }] = useDisclosure(false);
   const {
     mutate: createAgent,
@@ -69,7 +69,7 @@ export default function AgentPanel() {
         )}
 
         <Accordion variant="separated">
-          {agents?.map((agent) => (
+          {agents?.map((agent:any) => (
             <Accordion.Item key={agent.id} value={agent.id}>
               <Accordion.Control>
                 <Stack gap={2}>

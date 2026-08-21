@@ -1,8 +1,12 @@
 services:
-
   postgres:
     image: postgres:16-alpine
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U komik -d komik"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     environment:
       POSTGRES_USER: komik
       POSTGRES_PASSWORD: komik
@@ -12,7 +16,85 @@ services:
     volumes:
       - komikdb_data:/var/lib/postgresql/data
       - ./init_db.sh:/docker-entrypoint-initdb.d/init_db.sh
-    
+
+  redis:
+    image: redis:alpine
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "6381:6379"
+    volumes:
+      - komikredis_data:/data
+
+  inngest:
+    image: inngest/inngest:latest
+    command: >
+      inngest start 
+      --postgres-uri="postgres://komik:komik@postgres:5432/inngest?sslmode=disable"
+      --redis-uri="redis://redis:6379/1"
+    ports:
+      - "8288:8288"
+      - "8289:8289"
+    environment:
+      INNGEST_EVENT_KEY: "komikevent"
+      INNGEST_SIGNING_KEY: "8f2c9d41e7b5a3c6d8f0a1b2c3d4e5f6"
+      INNGEST_DEV: 1
+    volumes:
+      - komikinngest_data:/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  nats:
+    image: nats:alpine
+    restart: unless-stopped
+    command: ["-c", "/etc/nats/nats.conf"]
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8222/healthz"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "4223:4222"
+    volumes:
+      - ./nats.conf:/etc/nats/nats.conf:ro
+      - komiknats_data:/data/jetstream
+
+  nats-init:
+    image: natsio/nats-box:latest
+    restart: "no"
+    depends_on:
+      nats:
+        condition: service_healthy
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        until nats -s nats://nats:4222 rtt 2>/dev/null; do
+          echo "Waiting for NATS..."; sleep 2;
+        done
+        # Create stream if it doesn't already exist
+        nats -s nats://nats:4222 stream info komik-stream 2>/dev/null || \
+        nats -s nats://nats:4222 stream add komik-stream \
+          --subjects "komik.>" \
+          --storage file \
+          --replicas 1 \
+          --max-age 24h \
+          --retention limits \
+          --discard old \
+          --dupe-window 2m \
+          --defaults
 
 volumes:
   komikdb_data:
+  komikredis_data:
+  komiknats_data:
+  komikinngest_data:
+
+

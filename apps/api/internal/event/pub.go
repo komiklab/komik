@@ -15,6 +15,7 @@ type Publisher struct {
 func NewPublisher(cfg *internal.Config) *Publisher {
 	logger := zerowater.NewZerologLoggerAdapter(log.Logger)
 	publisher, err := js.NewPublisher(js.PublisherConfig{
+		URL:    cfg.NatsURL,
 		Logger: logger,
 	})
 	if err != nil {

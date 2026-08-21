@@ -26,6 +26,10 @@ func (h *HttpHandler) GetAgent(ctx *echo.Context) error {
 	return ctx.JSON(http.StatusOK, agents)
 }
 
+func (h *HttpHandler) InternalGetAgents(ctx *echo.Context) error {
+	return h.GetAgent(ctx)
+}
+
 // GetAgentId implements [apidefn.ServerInterface].
 func (h *HttpHandler) GetAgentId(ctx *echo.Context, id types.UUID) error {
 	panic("unimplemented")

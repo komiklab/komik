@@ -1,6 +1,14 @@
 "use client";
 
-import { Badge, Box, Group, NavLink, Stack, Text, ThemeIcon } from "@mantine/core";
+import {
+  Badge,
+  Box,
+  Group,
+  NavLink,
+  Stack,
+  Text,
+  ThemeIcon,
+} from "@mantine/core";
 import {
   IconClipboardList,
   IconFishHook,
@@ -101,35 +109,17 @@ export default function HomePage() {
           })}
         </Stack>
       </Box>
-
-      <Box
-        p="md"
-        style={{
-          borderRadius: 8,
-          border: "1px solid rgba(255,255,255,0.08)",
-          background: "rgba(255,255,255,0.035)",
-        }}
-      >
-        <Text fz="sm" fw={700}>
-          Backend status
-        </Text>
-        <Text fz="xs" c="dimmed" mt={4} lh={1.5}>
-          Audit log reads use the generated Orval React Query hook. Inbox is mocked
-          until the API contract is added.
-        </Text>
-      </Box>
     </Stack>
   );
 
   return (
     <RouteGuard>
-    <AppLayout navbar={sidebarNav}>
-      {currentSection === "audit-log" && <AuditLogDashboard />}
-      {currentSection === "inbox" && <InboxPanel />}
-      {currentSection === "agent" && <AgentPanel />}
-      {currentSection === "hooks" && <HooksPanel />}
-    </AppLayout>
-
+      <AppLayout navbar={sidebarNav}>
+        {currentSection === "audit-log" && <AuditLogDashboard />}
+        {currentSection === "inbox" && <InboxPanel />}
+        {currentSection === "agent" && <AgentPanel />}
+        {currentSection === "hooks" && <HooksPanel />}
+      </AppLayout>
     </RouteGuard>
   );
 }

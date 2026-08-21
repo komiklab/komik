@@ -6,6 +6,7 @@
  */
 
 export interface AgentCreateRequestParameter {
+  name: string;
   type: string;
   description: string;
   required?: boolean;

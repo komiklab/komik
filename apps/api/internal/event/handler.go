@@ -97,11 +97,11 @@ func (h *EventHandler) HandleEntityInitiated(msg *message.Message) error {
 	// entityData.TemporalRunId = &workflowRunID
 	// entityData.TemporalWorkflowId = &workflowId
 	// entityData.TemporalTaskQueue = h.temporalClient.TaskQueue
-	// entityData.Status = entity.EntityStateDispatched
-	// err = h.entitySrv.Update(entityData, map[string]string{"causationId": msg.UUID})
-	// if err != nil {
-	// 	log.Error().Err(err).Msg("Failed to update entity")
-	// 	return err
-	// }
+	entityData.Status = entity.EntityStateDispatched
+	err = h.entitySrv.Update(entityData, map[string]string{"causationId": msg.UUID})
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to update entity")
+		return err
+	}
 	return nil
 }

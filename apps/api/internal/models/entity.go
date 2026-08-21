@@ -16,9 +16,6 @@ type Entity struct {
 	SourceRef          string          `json:"source_ref" gorm:"type:varchar(255);not null;uniqueIndex"`
 	SourcePayload      datatypes.JSON  `json:"source_payload" gorm:"type:jsonb;not null;"`
 	Status             string          `json:"status" gorm:"type:varchar(20);not null;default:'initiated'"`
-	TemporalWorkflowId *string         `json:"temporal_workflow_id" gorm:"type:varchar(255);default:null"`
-	TemporalRunId      *string         `json:"temporal_run_id" gorm:"type:varchar(255);default:null"`
-	TemporalTaskQueue  string          `json:"temporal_task_queue" gorm:"type:varchar(255);default:'default'"`
 	AgentThreadId      *string         `json:"agent_thread_id" gorm:"type:varchar(255);default:null"`
 	ActiveInterruptId  *datatypes.UUID `json:"active_interrupt_id" gorm:"type:uuid;default:null"`
 	ResultSummary      *string         `json:"result_summary" gorm:"type:text;default:null"`
@@ -44,9 +41,6 @@ func (e *Entity) StructToMap() map[string]interface{} {
 		"source_ref":         e.SourceRef,
 		"source_payload":     e.SourcePayload,
 		"status":             e.Status,
-		"temporal_workflow_id": e.TemporalWorkflowId,
-		"temporal_run_id":      e.TemporalRunId,
-		"temporal_task_queue":  e.TemporalTaskQueue,
 		"agent_thread_id":      e.AgentThreadId,
 		"active_interrupt_id":  e.ActiveInterruptId,
 		"result_summary":     e.ResultSummary,

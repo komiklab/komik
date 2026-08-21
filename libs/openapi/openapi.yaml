@@ -471,9 +471,12 @@ components:
     agentCreateRequestParameter:
       type: object
       required:
+        - name
         - description
         - type
       properties:
+        name:
+          type: string
         type:
           type: string
         description:

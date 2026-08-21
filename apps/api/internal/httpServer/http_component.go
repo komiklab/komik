@@ -51,8 +51,12 @@ func (h *HttpComponent) Init() {
 			"GetHook":        {h.AuthMiddleware(sessionAuth)},
 			"PostHook":       {h.AuthMiddleware(sessionAuth)},
 			"PostHookId":     {h.AuthMiddleware(hmacAuth)},
+			"GetAgent":       {h.AuthMiddleware(sessionAuth)},
+			"PostAgent":      {h.AuthMiddleware(sessionAuth)},
+			"GetAgentId":     {h.AuthMiddleware(sessionAuth)},
 		},
 	})
+	h.e.GET("/internal/api/v1/agent", handler.InternalGetAgents)
 }
 
 func (h *HttpComponent) Start() {

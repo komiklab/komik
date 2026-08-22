@@ -5,32 +5,32 @@ import json
 
 class LLMResponse:
     def __init__(self, tools:List[Dict]):
-        tools =[
-    {
-        "name": "music_agent",
-        "description": "Controls music playback. Use when the user asks to play, stop, pause, resume, or change music.",
-        "parameters": {
-            "type": "object",
-            "properties": {},
-            "required": []
-        }
-    },
-    {
-        "name": "thermostat_agent",
-        "description": "Controls the thermostat temperature. Use only when the user explicitly asks to set, increase, decrease, raise, lower, or change the temperature.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "temp": {
-                    "type": "float",
-                    "description": "Temperature to set"
-                }
-            },
-            "required": ["temp"]
-        }
-    }
-]
-        print(tools)
+#         tools =[
+#     {
+#         "name": "music_agent",
+#         "description": "Controls music playback. Use when the user asks to play, stop, pause, resume, or change music.",
+#         "parameters": {
+#             "type": "object",
+#             "properties": {},
+#             "required": []
+#         }
+#     },
+#     {
+#         "name": "thermostat_agent",
+#         "description": "Controls the thermostat temperature. Use only when the user explicitly asks to set, increase, decrease, raise, lower, or change the temperature.",
+#         "parameters": {
+#             "type": "object",
+#             "properties": {
+#                 "temp": {
+#                     "type": "float",
+#                     "description": "Temperature to set"
+#                 }
+#             },
+#             "required": ["temp"]
+#         }
+#     }
+# ]
+#         print(tools)
         self.instance = needle.Needle(tools=tools)
 
     def plan_tool_calls(self, message: str, max_steps: int = 8, threshold: float = 0.5) -> List[Dict]:

@@ -6,6 +6,7 @@ import (
 	"github.com/inngest/inngestgo"
 	"github.com/inngest/inngestgo/connect"
 	"github.com/komiklab/komik/internal"
+	"github.com/komiklab/komik/internal/client"
 	"github.com/rs/zerolog/log"
 )
 
@@ -13,9 +14,10 @@ type Orchestrator struct {
 	cfg    *internal.Config
 	client inngestgo.Client
 	conn   connect.WorkerConnection
+	dbcon  *client.PostgresClient
 }
 
-func NewOrchestrator(cfg *internal.Config) *Orchestrator {
+func NewOrchestrator(cfg *internal.Config, dbcon *client.PostgresClient) *Orchestrator {
 	println(cfg.InngestConfig.EventKey)
 	client, err := inngestgo.NewClient(inngestgo.ClientOpts{
 		AppID:      cfg.InngestConfig.AppID,
@@ -29,6 +31,7 @@ func NewOrchestrator(cfg *internal.Config) *Orchestrator {
 	return &Orchestrator{
 		cfg:    cfg,
 		client: client,
+		dbcon:  dbcon,
 	}
 }
 

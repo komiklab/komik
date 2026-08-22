@@ -4,15 +4,16 @@ import (
 	"context"
 
 	"github.com/komiklab/komik/internal"
+	"github.com/komiklab/komik/internal/client"
 )
 
 type OrchestratorComponent struct {
 	orch *Orchestrator
 }
 
-func NewOrchestratorComponent(cfg *internal.Config) *OrchestratorComponent {
+func NewOrchestratorComponent(cfg *internal.Config, dbcon *client.PostgresClient) *OrchestratorComponent {
 	return &OrchestratorComponent{
-		orch: NewOrchestrator(cfg),
+		orch: NewOrchestrator(cfg, dbcon),
 	}
 }
 

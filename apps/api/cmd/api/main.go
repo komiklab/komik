@@ -43,7 +43,7 @@ func main() {
 	//temporalClient := client.NewTemporalClient(cfg)
 	contrlr := controller.NewController(cfg)
 	publisher := event.NewPublisher(cfg)
-	orchestratorComponent := orchestrator.NewOrchestratorComponent(cfg)
+	orchestratorComponent := orchestrator.NewOrchestratorComponent(cfg, postgresclient)
 	orchestratorClient := orchestratorComponent.GetOrchestratorClient()
 	httpComponent := httpserver.NewHttpComponent(cfg, postgresclient, publisher, redisClient)
 	eventComponent := event.NewEventLoopComponent(cfg, postgresclient, orchestratorClient)

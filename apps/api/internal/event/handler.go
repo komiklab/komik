@@ -10,6 +10,7 @@ import (
 	"github.com/komiklab/komik/internal/models"
 	"github.com/komiklab/komik/internal/orchestrator"
 
+
 	//"github.com/komiklab/komik/internal/repositories"
 
 	"github.com/rs/zerolog/log"
@@ -80,7 +81,7 @@ func (h *EventHandler) HandleEntityInitiated(msg *message.Message) error {
 		log.Error().Err(err).Msg("Failed to change the state")
 		return err
 	}
-	resp, err := h.orchestratorClient.SendEvent(ctx, "entity/dispatched", entityId, entityData.StructToMap())
+	resp, err := h.orchestratorClient.SendEvent(ctx, orchestrator.INNGEST_ENTITY_DISPATCH_EVENT, entityId, entityData.StructToMap())
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to send event to orchestrator")
 		return err

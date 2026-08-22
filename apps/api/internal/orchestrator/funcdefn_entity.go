@@ -4,6 +4,8 @@ import (
 	"context"
 
 	"github.com/inngest/inngestgo"
+	"github.com/inngest/inngestgo/step"
+	"github.com/komiklab/komik/internal/conversion"
 	"github.com/komiklab/komik/internal/models"
 	"github.com/rs/zerolog/log"
 )
@@ -14,10 +16,36 @@ func (o *Orchestrator) registerEntityTransitionFn() {
 			ID:   "handling-entity-transition",
 			Name: "Handling Entity Transition",
 		},
-		inngestgo.EventTrigger("entity/dispatched", nil),
+		inngestgo.EventTrigger(INNGEST_ENTITY_DISPATCH_EVENT, nil),
 		func(ctx context.Context, input inngestgo.Input[models.Entity]) (any, error) {
 			log.Debug().Msgf("received entity %v", input)
+			// Step 1. Fetche the conversation based on session ID
+			entity := input.Event.Data
+			sessionId := entity.Id
+			convSrv := conversion.NewConverstionSrv(o.dbcon)
+			conversation, err := step.Run(ctx, "fetchConversationBySessionId", func(ctx context.Context) ([]*models.Conversation, error) {
+				return convSrv.GetConversationBySessionId(sessionId)
+			})
+			if err != nil {
+				log.Error().Err(err).Msg("Failed to fetch conversation")
+				return nil, err
+			}
+			if conversation == nil {
+				// when there is no conversation, we should create one
+				// note this means it comes from hook
+				err := convSrv.CreateConversation(&models.Conversation{
+					SessionId:        sessionId,
+					OwnerId:          *input.Event.ID,
+					ConversationType: conversion.ConversationTypeHook,
+					Sequence:         1,
+					Content:          entity.SourcePayload,
+				})
+				if err != nil {
+					log.Error().Err(err).Msg("Failed to create conversation")
+					return nil, err
+				}
+			}
 			return nil, nil
-		}, 
+		},
 	)
 }

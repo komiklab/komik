@@ -6,18 +6,23 @@ import (
 	"github.com/komiklab/komik/internal/utils"
 )
 
-
 type AgentRepo struct {
 	dbcon *client.PostgresClient
 }
 
-func NewAgentRepo(dbcon *client.PostgresClient) *AgentRepo{
+func (a *AgentRepo) ListAgentsBasedOnCustomHook(entity *models.Entity) ([]models.Agent, error) {
+	gormdb := a.dbcon.GetClient()
+	hooks := entity.SourceType
+	
+}
+
+func NewAgentRepo(dbcon *client.PostgresClient) *AgentRepo {
 	return &AgentRepo{
 		dbcon: dbcon,
 	}
 }
 
-func (a *AgentRepo) ListAgents()([]models.Agent, error){
+func (a *AgentRepo) ListAgents() ([]models.Agent, error) {
 	gormdb := a.dbcon.GetClient()
 	var agents []models.Agent
 	err := gormdb.Find(&agents).Error
@@ -27,7 +32,7 @@ func (a *AgentRepo) ListAgents()([]models.Agent, error){
 	return agents, nil
 }
 
-func (a *AgentRepo) CreateAgent(agent *models.Agent) error{
+func (a *AgentRepo) CreateAgent(agent *models.Agent) error {
 	gormdb := a.dbcon.GetClient()
 	err := gormdb.Create(agent).Error
 	if err != nil {

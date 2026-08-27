@@ -30,15 +30,23 @@ class LLMResponse:
 #         }
 #     }
 # ]
-#         print(tools)
-        self.instance = needle.Needle(tools=tools)
+#         tools = [
+#     {"name": "music_agent", "description": "Controls music playback...",
+#      "parameters": {"type": "object", "properties": {
+#          "action": {"type": "string", "description": "play, stop, pause, resume"},
+#          "genre_or_artist": {"type": "string", "description": "genre, artist, or song mentioned, if any"}
+#      }, "required": ["action"]}},
+# ]
+        print("tools are ")
+        print(tools)
+        self.instance = needle.Needle(tools=json.dumps(tools))
 
-    def plan_tool_calls(self, message: str, max_steps: int = 8, threshold: float = 0.5) -> List[Dict]:
+    def plan_tool_calls(self, message: str, max_steps: int = 8, threshold: float = 0.35) -> List[Dict]:
 
         self.instance.reset()
         plan = []
-        response = self.instance.complete(text=message, max_new_tokens=256)
-
+        response = self.instance.complete(text=message, max_new_tokens=8192)
+        print(response)
         for step in range(max_steps):
             calls = response.get("function_calls", [])
             confidence = response.get("confidence")
@@ -79,7 +87,7 @@ class LLMResponse:
 
             for c in calls:
                 plan.append({"call": c, "confidence": confidence, "ungrounded": ungrounded})
-
+            ack =[{"status": "ok"} for _ in calls]
             # if status != "accepted":
             #     return {
             #     "function_calls": plan,          # steps accepted so far
@@ -91,7 +99,7 @@ class LLMResponse:
             #     }
             # plan.extend(calls)
             # name = calls[0]["name"]
-            response = self.instance.complete(text=json.dumps({}), max_new_tokens=256)
+            response = self.instance.complete(text=json.dumps({ack}), max_new_tokens=8192)
 
         return {
         "function_calls": plan,

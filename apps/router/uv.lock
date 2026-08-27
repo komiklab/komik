@@ -52,7 +52,7 @@ wheels = [
 
 [[package]]
 name = "cactus-needle"
-version = "2.0.7"
+version = "2.0.9"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "flax" },
@@ -63,9 +63,9 @@ dependencies = [
     { name = "optax" },
     { name = "sentencepiece" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/32/54/d3153642b32e6541c03b2db675e47a87dd907786bea7e97dd9c963483ad3/cactus_needle-2.0.7.tar.gz", hash = "sha256:635c060106d1bd0c52f8ae47152a336942e97240ded38aa5720aa56eb5c4159d", size = 68634, upload-time = "2026-08-19T16:06:06.52Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/3e/25/997367b9435cedfbf560ce438aee57f8a7c29fc5038ba6a5f1aceec4a959/cactus_needle-2.0.9.tar.gz", hash = "sha256:790f0123a301472127d77e9879d66a7a3455e49bd7c56853128fb4d63c361d49", size = 69048, upload-time = "2026-08-21T16:06:21.682Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/9a/97/e2013a174cb5110d56355e343e190a97ffb1456013bd7b9e5fe1ba6ca56b/cactus_needle-2.0.7-py3-none-any.whl", hash = "sha256:757ae325a5220450434ebbf3e67bf6145fe25a6e7e9add5ab77f2a669ac79ac0", size = 65570, upload-time = "2026-08-19T16:06:05.205Z" },
+    { url = "https://files.pythonhosted.org/packages/76/f3/d7f07cea6d097ee380cd6b4c2e5c7561058a0151eeaf5fff9fa1f645d15c/cactus_needle-2.0.9-py3-none-any.whl", hash = "sha256:2e407ebfa75a7d5be85fb45b7e689ee81219a90761375ce389a3da2854b617ac", size = 65803, upload-time = "2026-08-21T16:06:20.176Z" },
 ]
 
 [[package]]
@@ -1030,14 +1030,16 @@ dependencies = [
     { name = "fastapi", extra = ["standard"] },
     { name = "httpx" },
     { name = "pydantic-settings" },
+    { name = "uvicorn" },
 ]
 
 [package.metadata]
 requires-dist = [
-    { name = "cactus-needle", specifier = ">=2.0.7" },
+    { name = "cactus-needle", specifier = ">=2.0.9" },
     { name = "fastapi", extras = ["standard"], specifier = ">=0.141.1" },
     { name = "httpx", specifier = ">=0.28.1" },
     { name = "pydantic-settings", specifier = ">=2.15.0" },
+    { name = "uvicorn", specifier = ">=0.52.4" },
 ]
 
 [[package]]

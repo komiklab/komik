@@ -22,13 +22,13 @@ import (
 
 // DetailedAgentModel defines model for DetailedAgentModel.
 type DetailedAgentModel struct {
-	AgentID      *openapi_types.UUID           `json:"agentID,omitempty"`
-	Capabilities []string                      `json:"capabilities"`
-	Description  string                        `json:"description"`
-	Endpoint     string                        `json:"endpoint"`
-	Name         string                        `json:"name"`
-	Parameters   []AgentCreateRequestParameter `json:"parameters"`
-	Tags         *[]string                     `json:"tags,omitempty"`
+	AgentID     *openapi_types.UUID           `json:"agentID,omitempty"`
+	Description string                        `json:"description"`
+	Endpoint    string                        `json:"endpoint"`
+	Name        string                        `json:"name"`
+	Parameters  []AgentCreateRequestParameter `json:"parameters"`
+	Tags        *[]string                     `json:"tags,omitempty"`
+	TriggeredBy []string                      `json:"triggered_by"`
 }
 
 // AdminCreateRequest defines model for adminCreateRequest.
@@ -44,12 +44,12 @@ type AdminGetResponse struct {
 
 // AgentCreateRequest defines model for agentCreateRequest.
 type AgentCreateRequest struct {
-	Capabilities []string                      `json:"capabilities"`
-	Description  string                        `json:"description"`
-	Endpoint     string                        `json:"endpoint"`
-	Name         string                        `json:"name"`
-	Parameters   []AgentCreateRequestParameter `json:"parameters"`
-	Tags         *[]string                     `json:"tags,omitempty"`
+	Description string                        `json:"description"`
+	Endpoint    string                        `json:"endpoint"`
+	Name        string                        `json:"name"`
+	Parameters  []AgentCreateRequestParameter `json:"parameters"`
+	Tags        *[]string                     `json:"tags,omitempty"`
+	TriggeredBy []string                      `json:"triggered_by"`
 }
 
 // AgentCreateRequestParameter defines model for agentCreateRequestParameter.
@@ -476,31 +476,31 @@ func RegisterHandlersWithOptions(router EchoRouter, si ServerInterface, options 
 // const string: with thousands of chunks the chained `+` fold is several
 // times slower for the Go compiler than parsing a slice literal.
 var swaggerSpec = []string{
-	"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",
+	"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",
 }
 
 // decodeSpec returns the embedded OpenAPI spec as raw JSON bytes,

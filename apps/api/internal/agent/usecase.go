@@ -38,3 +38,13 @@ func (a *AgentService) ListAgent() (*models.ListAgents, error) {
 		Agents: agents,
 	}, nil
 }
+
+func (a *AgentService) ListAgentBasedOnEntity(entity *models.Entity) (*models.ListAgents, error) {
+	agents, err := a.agentRepo.ListAgentsBasedOnEntity(entity)
+	if err != nil {
+		return nil, err
+	}
+	return &models.ListAgents{
+		Agents: agents,
+	}, nil
+}

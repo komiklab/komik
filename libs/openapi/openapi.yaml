@@ -448,7 +448,7 @@ components:
         - endpoint
         - description
         - parameters
-        - capabilities
+        - triggered_by
       properties:
         name:
           type: string
@@ -456,7 +456,7 @@ components:
           type: string
         endpoint:
           type: string
-        capabilities:
+        triggered_by:
           type: array
           items:
             type: string
@@ -483,6 +483,7 @@ components:
           type: string
         required:
           type: boolean
+        
 
     auditlogGetResponse:
       type: object

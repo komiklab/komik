@@ -29,7 +29,7 @@ const initialValues = {
   name: "",
   endpoint: "",
   description: "",
-  capabilities: [],
+  triggeredBy: [],
   parameters: [],
   tags: [],
 };
@@ -138,7 +138,7 @@ export function AgentCreateForm({ onSubmit, isLoading, error }: any) {
     // filter out empty values before submitting
     const payload = {
       ...values,
-      capabilities: values.capabilities.filter((c: string) => c.trim() !== ""),
+      triggeredBy: values.triggeredBy.filter((c: string) => c.trim() !== ""),
       tags: values.tags.filter((t: string) => t.trim() !== ""),
       parameters: values.parameters.filter(
         (p: any) => p.type.trim() !== "" || p.description.trim() !== ""
@@ -192,7 +192,7 @@ export function AgentCreateForm({ onSubmit, isLoading, error }: any) {
                 onClick={() => setAdvancedOpen((o) => !o)}
               >
                 <Text size="sm" fw={600}>
-                  Capabilities & Parameters
+                  Triggered by & Parameters
                 </Text>
                 {advancedOpen ? (
                   <IconChevronUp size={14} />
@@ -207,10 +207,10 @@ export function AgentCreateForm({ onSubmit, isLoading, error }: any) {
           <Collapse expanded={advancedOpen}>
             <Stack gap="md">
               <TagsInput
-                label="Capabilities"
+                label="Triggered By"
                 placeholder="Press Enter to add capability"
                 required
-                {...form.getInputProps("capabilities")}
+                {...form.getInputProps("triggeredBy")}
               />
 
               <ParameterList

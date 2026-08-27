@@ -10,7 +10,7 @@ export interface AgentCreateRequest {
   name: string;
   description: string;
   endpoint: string;
-  capabilities: string[];
+  triggered_by: string[];
   parameters: AgentCreateRequestParameter[];
   tags?: string[];
 }

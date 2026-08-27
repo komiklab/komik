@@ -30,12 +30,12 @@ func (o *Orchestrator) registerEntityTransitionFn() {
 				log.Error().Err(err).Msg("Failed to fetch conversation")
 				return nil, err
 			}
-			if conversation == nil {
+			if len(conversation) == 0 {
 				// when there is no conversation, we should create one
 				// note this means it comes from hook
 				err := convSrv.CreateConversation(&models.Conversation{
 					SessionId:        sessionId,
-					OwnerId:          *input.Event.ID,
+					OwnerId:          input.InputCtx.RunID,
 					ConversationType: conversion.ConversationTypeHook,
 					Sequence:         1,
 					Content:          entity.SourcePayload,
@@ -45,6 +45,7 @@ func (o *Orchestrator) registerEntityTransitionFn() {
 					return nil, err
 				}
 			}
+			// step 2: call needle to get the list of tools
 			return nil, nil
 		},
 	)

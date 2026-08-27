@@ -9,6 +9,28 @@
       "program": "${workspaceFolder}/apps/api/cmd/api/main.go",
       "envFile": "${workspaceFolder}/apps/api/.env.development"
     },
+    {
+      "name":"Test Debug",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/apps/router/test.py",
+      "python": "${workspaceFolder}/apps/router/.venv/bin/python",
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "subProcess": true
+    },
+    {
+      "name": "Router: FastAPI dev",
+      "type": "debugpy",
+      "request": "launch",
+      "python": "${workspaceFolder}/apps/router/.venv/bin/python",
+      "module": "fastapi",
+      "args": ["dev"],
+      "cwd": "${workspaceFolder}/apps/router",
+      "envFile": "${workspaceFolder}/apps/router/.env.development",
+      "justMyCode": false,
+      "subProcess": true
+    },
 
     {
       "name": "Next.js: debug server-side",

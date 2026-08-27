@@ -72,6 +72,24 @@ func (o *Orchestrator) registerEntityTransitionFn() {
 				return nil, err
 			}
 			log.Debug().Msgf("fetched agents %v", agents)
+			// TODO: logic to decide when there are no agents and multiple agent
+			// TODO: as of now we will consider one agent only
+			// step 3: call the agents
+			agent := agents[0]
+			_, err = step.Run(ctx, "callAgent", func(ctx context.Context) (any, error) {
+				// call the agent
+				_, err := agentsrv.CallAgent(agent, entity)
+				if err != nil {
+					log.Error().Err(err).Msg("Failed to call agent")
+					return nil, err
+				}
+				return nil, nil
+			})
+			if err != nil {
+				log.Error().Err(err).Msg("Failed to call agent")
+				return nil, err
+			}
+			log.Debug().Msgf("called agent %v", agent)
 			return nil, nil
 
 		},

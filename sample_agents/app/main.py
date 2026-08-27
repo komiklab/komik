@@ -25,12 +25,12 @@ async def music_agent_endpoint(payload: Payload):
 class CVERequest(BaseModel):
     cve_id: str
 
-@app.post("/workflow/cve")
+@app.post("/workflows/cve")
 async def run_cve_workflow(request: CVERequest):
     result = await graph.ainvoke({"cve_id": request.cve_id})
     return result
 
-@app.post("/workflow/cve/stream")
+@app.post("/workflows/cve/stream")
 async def stream_cve_endpoint(request: CVERequest):
     async def event_generator():
         async for event in stream_cve_workflow(request.cve_id):

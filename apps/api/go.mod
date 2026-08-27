@@ -111,6 +111,7 @@ require (
 	gorm.io/datatypes v1.2.7
 	gorm.io/driver/postgres v1.6.0
 	gorm.io/gorm v1.31.1
+	resty.dev/v3 v3.0.0-rc.3
 )
 
 tool github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen

@@ -69,7 +69,7 @@ export default function AgentPanel() {
         )}
 
         <Accordion variant="separated">
-          {agents?.map((agent:any) => (
+          {agents?.map((agent: any) => (
             <Accordion.Item key={agent.id} value={agent.id}>
               <Accordion.Control>
                 <Stack gap={2}>
@@ -107,7 +107,7 @@ export default function AgentPanel() {
       </ActionIcon>
 
       {/* Create Agent Modal */}
-      <Modal opened={opened} onClose={handleClose} title="Create Agent">
+      <Modal opened={opened} onClose={handleClose} title="Create Agent" size="xl">
         {/* Replace with your form */}
         <AgentCreateForm
           onSubmit={handleCreate}

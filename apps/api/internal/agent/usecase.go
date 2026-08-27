@@ -39,8 +39,8 @@ func (a *AgentService) ListAgent() (*models.ListAgents, error) {
 	}, nil
 }
 
-func (a *AgentService) ListAgentBasedOnEntity(entity *models.Entity) (*models.ListAgents, error) {
-	agents, err := a.agentRepo.ListAgentsBasedOnEntity(entity)
+func (a *AgentService) ListAgentBasedOnEntity(entity models.Entity) (*models.ListAgents, error) {
+	agents, err := a.agentRepo.ListAgentsBasedOnCustomHook(entity)
 	if err != nil {
 		return nil, err
 	}

@@ -13,9 +13,9 @@ type Agent struct {
 	Id          uuid.UUID                             `json:"id" gorm:"type:uuid;primaryKey;default:uuid_generate_v4()"`
 	CreatedAt   int64                                 `json:"createdAt" gorm:"autoCreateTime"`
 	UpdatedAt   int64                                 `json:"updatedAt" gorm:"autoUpdateTime"`
-	Description string                                `json:"description" gorm:"null"`
+	Description string                                `json:"description" valid:"required" gorm:"null"`
 	Name        string                                `json:"name"  valid:"required" gorm:"not null"`
-	Endpoint    string                                `json:"endpoint" gorm:"not null"`
+	Endpoint    string                                `json:"endpoint" valid:"required" gorm:"not null"`
 	TriggeredBy []string                              `json:"triggeredBy" gorm:"type:jsonb;serializer:json;not null"`
 	Parameter   []apidefn.AgentCreateRequestParameter `json:"parameter" gorm:"type:jsonb;serializer:json;not null"`
 	Tags        *[]string                             `json:"tags" gorm:"type:jsonb;serializer:json;not null"`

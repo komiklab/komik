@@ -29,7 +29,7 @@ const initialValues = {
   name: "",
   endpoint: "",
   description: "",
-  triggeredBy: [],
+  triggered_by: [],
   parameters: [],
   tags: [],
 };
@@ -59,6 +59,13 @@ function ParameterList({ label, addLabel, values, onAdd, onRemove, onChange }: a
       <Stack gap="xs">
         {values.map((row: any, index: number) => (
           <Group key={index} gap="xs" wrap="nowrap" align="center">
+            <TextInput
+              placeholder="Name"
+              value={row.name}
+              onChange={(e) => onChange(index, "name", e.currentTarget.value)}
+              style={{ flex: 1 }}
+              size="sm"
+            />
             <TextInput
               placeholder="Type (e.g. string)"
               value={row.type}
@@ -125,6 +132,7 @@ export function AgentCreateForm({ onSubmit, isLoading, error }: any) {
   const parametersHelpers = {
     add: () =>
       form.insertListItem("parameters", {
+        name: "",
         type: "",
         description: "",
         required: false,
@@ -138,7 +146,7 @@ export function AgentCreateForm({ onSubmit, isLoading, error }: any) {
     // filter out empty values before submitting
     const payload = {
       ...values,
-      triggeredBy: values.triggeredBy.filter((c: string) => c.trim() !== ""),
+      triggered_by: values.triggered_by.filter((c: string) => c.trim() !== ""),
       tags: values.tags.filter((t: string) => t.trim() !== ""),
       parameters: values.parameters.filter(
         (p: any) => p.type.trim() !== "" || p.description.trim() !== ""
@@ -148,7 +156,7 @@ export function AgentCreateForm({ onSubmit, isLoading, error }: any) {
   };
 
   return (
-    <Paper withBorder shadow="sm" p="lg" radius="md" maw={560} mx="auto">
+    <Paper withBorder shadow="sm" p="lg" radius="md" maw={800} mx="auto">
       <form onSubmit={form.onSubmit(handleSubmit)}>
         <Stack gap="lg">
           {error && (
@@ -210,7 +218,7 @@ export function AgentCreateForm({ onSubmit, isLoading, error }: any) {
                 label="Triggered By"
                 placeholder="Press Enter to add capability"
                 required
-                {...form.getInputProps("triggeredBy")}
+                {...form.getInputProps("triggered_by")}
               />
 
               <ParameterList

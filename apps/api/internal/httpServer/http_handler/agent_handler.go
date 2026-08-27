@@ -37,7 +37,6 @@ func (h *HttpHandler) GetAgentId(ctx *echo.Context, id types.UUID) error {
 
 // PostAgent implements [apidefn.ServerInterface].
 func (h *HttpHandler) PostAgent(ctx *echo.Context) error {
-	log.Info().Msg("called PostAgent")
 	var req apidefn.AgentCreateRequest
 	if err := ctx.Bind(&req); utils.IsErrNotNil(err) {
 		return ctx.JSON(http.StatusBadRequest, utils.NewBindError("failed to bind request", err))
@@ -50,7 +49,11 @@ func (h *HttpHandler) PostAgent(ctx *echo.Context) error {
 	svc := agent.NewAgentService(h.dbclient)
 	resp, err := svc.CreateAgent(agentModel)
 	if err != nil {
-		return ctx.JSON(http.StatusBadRequest, utils.NewBindError("failed to create agent model", err))
+		komikErr, ok := err.(*utils.KomikError)
+		if !ok {
+			komikErr = utils.NewGeneralError(err)
+		}
+		return ctx.JSON(int(komikErr.StatusCode), komikErr)
 	}
 	//TODO: Fire an event[KOM-21]
 	return ctx.JSON(http.StatusOK, resp)

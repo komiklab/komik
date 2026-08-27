@@ -30,6 +30,24 @@ services:
     volumes:
       - komikredis_data:/data
 
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: minioadmin
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - komikminio_data:/data
+
   inngest:
     image: inngest/inngest:latest
     command: >
@@ -56,7 +74,15 @@ services:
     restart: unless-stopped
     command: ["-c", "/etc/nats/nats.conf"]
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8222/healthz"]
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:8222/healthz",
+        ]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -96,5 +122,4 @@ volumes:
   komikredis_data:
   komiknats_data:
   komikinngest_data:
-
-
+  komikminio_data:

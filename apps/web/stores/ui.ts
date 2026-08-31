@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-export type WorkspaceSection = "audit-log" | "inbox" | "agent" | "hooks";
+export type WorkspaceSection = "audit-log" | "inbox" | "agent" | "hooks" | "channels";
 
 interface UiStore {
   currentSection: WorkspaceSection;

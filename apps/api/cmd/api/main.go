@@ -39,6 +39,7 @@ func main() {
 		models.Agent{},
 		models.Hooks{},
 		models.Conversation{},
+		models.Channel{},
 	)
 	redisClient := client.NewRedisClient(cfg)
 	//temporalClient := client.NewTemporalClient(cfg)

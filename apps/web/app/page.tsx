@@ -13,6 +13,7 @@ import {
   IconClipboardList,
   IconFishHook,
   IconInbox,
+  IconMessage,
   IconTimelineEvent,
 } from "@tabler/icons-react";
 import { AppLayout } from "../components/layout/AppLayout";
@@ -22,6 +23,7 @@ import HooksPanel from "../components/layout/hooks/hookspanel";
 import { InboxPanel } from "../components/layout/inbox/InboxPanel";
 import { useUiStore, type WorkspaceSection } from "../stores/ui";
 import { RouteGuard } from "../providers/RouteGuard";
+import ChannelPanel from "../components/channels/channelpanel";
 
 const navItems: Array<{
   value: WorkspaceSection;
@@ -53,6 +55,12 @@ const navItems: Array<{
     description: "Configure webhooks",
     icon: IconFishHook,
   },
+  {
+    value: "channels",
+    label: "Channels",
+    description: "Configure channels",
+    icon: IconMessage,
+  }
 ];
 
 export default function HomePage() {
@@ -119,6 +127,7 @@ export default function HomePage() {
         {currentSection === "inbox" && <InboxPanel />}
         {currentSection === "agent" && <AgentPanel />}
         {currentSection === "hooks" && <HooksPanel />}
+        {currentSection === "channels" && <ChannelPanel />}
       </AppLayout>
     </RouteGuard>
   );

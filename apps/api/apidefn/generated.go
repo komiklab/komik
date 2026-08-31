@@ -20,6 +20,21 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
+// Defines values for ChannelRequestTypeOf.
+const (
+	Slack ChannelRequestTypeOf = "slack"
+)
+
+// Valid indicates whether the value is a known member of the ChannelRequestTypeOf enum.
+func (e ChannelRequestTypeOf) Valid() bool {
+	switch e {
+	case Slack:
+		return true
+	default:
+		return false
+	}
+}
+
 // DetailedAgentModel defines model for DetailedAgentModel.
 type DetailedAgentModel struct {
 	AgentID     *openapi_types.UUID           `json:"agentID,omitempty"`
@@ -101,6 +116,27 @@ type AuditlogResponse struct {
 	Severity      *string             `json:"severity,omitempty"`
 }
 
+// ChannelGetResponse defines model for channelGetResponse.
+type ChannelGetResponse struct {
+	Channels *[]ChannelResponse `json:"channels,omitempty"`
+}
+
+// ChannelRequest defines model for channelRequest.
+type ChannelRequest struct {
+	Name    string                 `json:"name"`
+	Payload map[string]interface{} `json:"payload"`
+	TypeOf  ChannelRequestTypeOf   `json:"typeOf"`
+}
+
+// ChannelRequestTypeOf defines model for ChannelRequest.TypeOf.
+type ChannelRequestTypeOf string
+
+// ChannelResponse defines model for channelResponse.
+type ChannelResponse struct {
+	Id   *openapi_types.UUID `json:"id,omitempty"`
+	Name *string             `json:"name,omitempty"`
+}
+
 // ErrorResponse defines model for errorResponse.
 type ErrorResponse struct {
 	ErrorCode    *string `json:"error_code,omitempty"`
@@ -162,6 +198,9 @@ type PostAgentJSONRequestBody = AgentCreateRequest
 // PostAuthLoginJSONRequestBody defines body for PostAuthLogin for application/json ContentType.
 type PostAuthLoginJSONRequestBody = AdminCreateRequest
 
+// PostChannelJSONRequestBody defines body for PostChannel for application/json ContentType.
+type PostChannelJSONRequestBody = ChannelRequest
+
 // PostHookJSONRequestBody defines body for PostHook for application/json ContentType.
 type PostHookJSONRequestBody = HookRegisterRequest
 
@@ -206,6 +245,12 @@ type ServerInterface interface {
 
 	// (GET /auth/oidc/login)
 	GetAuthOidcLogin(ctx *echo.Context) error
+
+	// (GET /channel)
+	GetChannel(ctx *echo.Context) error
+
+	// (POST /channel)
+	PostChannel(ctx *echo.Context) error
 
 	// (GET /hook)
 	GetHook(ctx *echo.Context) error
@@ -363,6 +408,24 @@ func (w *ServerInterfaceWrapper) GetAuthOidcLogin(ctx *echo.Context) error {
 	return err
 }
 
+// GetChannel converts echo context to params.
+func (w *ServerInterfaceWrapper) GetChannel(ctx *echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetChannel(ctx)
+	return err
+}
+
+// PostChannel converts echo context to params.
+func (w *ServerInterfaceWrapper) PostChannel(ctx *echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.PostChannel(ctx)
+	return err
+}
+
 // GetHook converts echo context to params.
 func (w *ServerInterfaceWrapper) GetHook(ctx *echo.Context) error {
 	var err error
@@ -464,6 +527,8 @@ func RegisterHandlersWithOptions(router EchoRouter, si ServerInterface, options 
 	router.GET(options.BaseURL+"/auth/me", wrapper.GetAuthMe, options.OperationMiddlewares["GetAuthMe"]...)
 	router.GET(options.BaseURL+"/auth/oidc/callback", wrapper.GetAuthOidcCallback, options.OperationMiddlewares["GetAuthOidcCallback"]...)
 	router.GET(options.BaseURL+"/auth/oidc/login", wrapper.GetAuthOidcLogin, options.OperationMiddlewares["GetAuthOidcLogin"]...)
+	router.GET(options.BaseURL+"/channel", wrapper.GetChannel, options.OperationMiddlewares["GetChannel"]...)
+	router.POST(options.BaseURL+"/channel", wrapper.PostChannel, options.OperationMiddlewares["PostChannel"]...)
 	router.GET(options.BaseURL+"/hook", wrapper.GetHook, options.OperationMiddlewares["GetHook"]...)
 	router.POST(options.BaseURL+"/hook", wrapper.PostHook, options.OperationMiddlewares["PostHook"]...)
 	router.POST(options.BaseURL+"/hook/slack", wrapper.PostHookSlack, options.OperationMiddlewares["PostHookSlack"]...)
@@ -476,31 +541,33 @@ func RegisterHandlersWithOptions(router EchoRouter, si ServerInterface, options 
 // const string: with thousands of chunks the chained `+` fold is several
 // times slower for the Go compiler than parsing a slice literal.
 var swaggerSpec = []string{
-	"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",
+	"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",
+	"byOss14OLdrfzDyt9aE6yLdX238DAAD//w==",
 }
 
 // decodeSpec returns the embedded OpenAPI spec as raw JSON bytes,

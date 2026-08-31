@@ -30,6 +30,9 @@ import type {
   AgentCreateResponse,
   AgentGetResponse,
   AuditlogGetResponse,
+  ChannelGetResponse,
+  ChannelRequest,
+  ChannelResponse,
   DetailedAgentModel,
   ErrorResponse,
   GetAuditlogParams,
@@ -46,6 +49,196 @@ import { customInstance } from './httpClient';
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
+
+export type getChannelResponse200 = {
+  data: ChannelGetResponse
+  status: 200
+}
+
+export type getChannelResponseSuccess = (getChannelResponse200) & {
+  headers: Headers;
+};
+;
+
+export type getChannelResponse = (getChannelResponseSuccess)
+
+export const getGetChannelUrl = () => {
+
+
+
+
+  return `http://localhost:65080/api/v1/channel`
+}
+
+export const getChannel = async ( options?: RequestInit): Promise<getChannelResponse> => {
+
+  return customInstance<getChannelResponse>(getGetChannelUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetChannelQueryKey = () => {
+    return [
+    `http://localhost:65080/api/v1/channel`
+    ] as const;
+    }
+
+
+export const getGetChannelQueryOptions = <TData = Awaited<ReturnType<typeof getChannel>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getChannel>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetChannelQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getChannel>>> = ({ signal }) => getChannel({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getChannel>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetChannelQueryResult = NonNullable<Awaited<ReturnType<typeof getChannel>>>
+export type GetChannelQueryError = unknown
+
+
+export function useGetChannel<TData = Awaited<ReturnType<typeof getChannel>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getChannel>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getChannel>>,
+          TError,
+          Awaited<ReturnType<typeof getChannel>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetChannel<TData = Awaited<ReturnType<typeof getChannel>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getChannel>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getChannel>>,
+          TError,
+          Awaited<ReturnType<typeof getChannel>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetChannel<TData = Awaited<ReturnType<typeof getChannel>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getChannel>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetChannel<TData = Awaited<ReturnType<typeof getChannel>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getChannel>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetChannelQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export type postChannelResponse200 = {
+  data: ChannelResponse
+  status: 200
+}
+
+export type postChannelResponse500 = {
+  data: ErrorResponse
+  status: 500
+}
+
+export type postChannelResponseSuccess = (postChannelResponse200) & {
+  headers: Headers;
+};
+export type postChannelResponseError = (postChannelResponse500) & {
+  headers: Headers;
+};
+
+export type postChannelResponse = (postChannelResponseSuccess | postChannelResponseError)
+
+export const getPostChannelUrl = () => {
+
+
+
+
+  return `http://localhost:65080/api/v1/channel`
+}
+
+export const postChannel = async (channelRequest: ChannelRequest, options?: RequestInit): Promise<postChannelResponse> => {
+
+  return customInstance<postChannelResponse>(getPostChannelUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(channelRequest)
+  }
+);}
+
+
+
+
+export const getPostChannelMutationOptions = <TError = ErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postChannel>>, TError,{data: ChannelRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof postChannel>>, TError,{data: ChannelRequest}, TContext> => {
+
+const mutationKey = ['postChannel'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postChannel>>, {data: ChannelRequest}> = (props) => {
+          const {data} = props ?? {};
+
+          return  postChannel(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostChannelMutationResult = NonNullable<Awaited<ReturnType<typeof postChannel>>>
+    export type PostChannelMutationBody = ChannelRequest
+    export type PostChannelMutationError = ErrorResponse
+
+    export const usePostChannel = <TError = ErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postChannel>>, TError,{data: ChannelRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postChannel>>,
+        TError,
+        {data: ChannelRequest},
+        TContext
+      > => {
+      return useMutation(getPostChannelMutationOptions(options), queryClient);
+    }
 
 export type getAgentIdResponse200 = {
   data: DetailedAgentModel

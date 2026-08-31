@@ -6,3 +6,4 @@ apps/api/.env.development
 apps/api/cmd/api/__debug_bin*
 infra/helm/komik/temporal/*
 **/*.pyc
+infra/docker-compose/tmp/build-errors.log

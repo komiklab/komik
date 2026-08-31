@@ -13,6 +13,21 @@ tags:
   - name: channel
 
 paths:
+  /channel/{channelId}/send:
+    post: 
+      tags:
+        - channel 
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: channel id
+      responses:
+        "201":
+          description: "Created"
   /channel:
     get:
       tags:

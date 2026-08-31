@@ -22,6 +22,13 @@ type SlackWebHook struct {
 	taskQ         *asynclient.AsynqClient
 }
 
+func NewSlackWebHookLite(token string) *SlackWebHook {
+	api := slack.New(token, slack.OptionDebug(true))
+	return &SlackWebHook{
+		client: api,
+	}
+}
+
 func NewSlackWebHook(cfg *internal.Config) *SlackWebHook {
 	redisclient := client.NewRedisClient(cfg)
 	taskQ := asynclient.NewAsyncClient(redisclient)
@@ -45,6 +52,15 @@ func (s *SlackWebHook) GetUserEmail(userId string) (string, error) {
 func (s *SlackWebHook) SendMessage(ev *slackevents.AppMentionEvent, message string) error {
 	log.Debug().Msg("channel is " + ev.Channel + "and TimeStamp is " + ev.TimeStamp)
 	_, _, err := s.client.PostMessage(ev.Channel, slack.MsgOptionText(message, false), slack.MsgOptionTS(ev.TimeStamp))
+	if err != nil {
+		log.Error().Msgf("failed to post message: %v", err)
+		return err
+	}
+	return nil
+}
+
+func (s *SlackWebHook) SendMessageLite(channelId string, message string) error {
+	_, _, err := s.client.PostMessage(channelId, slack.MsgOptionText(message, false))
 	if err != nil {
 		log.Error().Msgf("failed to post message: %v", err)
 		return err

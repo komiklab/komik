@@ -14,7 +14,6 @@ export default function UserMenu() {
   const { data: authdata } = useGetAuthMe();
   const username =
     authdata?.status === 200 ? authdata.data.username : undefined;
-  console.log("username is " + username);
   const { mutate: logout } = usePostAuthLogout({
     mutation: {
       onSuccess: () => {

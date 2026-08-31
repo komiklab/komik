@@ -12,6 +12,14 @@ type ChannelService struct {
 	channelRepo *repositories.ChannelRepo
 }
 
+func (s *ChannelService) GetByID(ctx context.Context, channelId string) (*models.Channel, error) {
+	return s.channelRepo.GetChannelByID(channelId)
+}
+
+func (s *ChannelService) Create(ctx context.Context, channel *models.Channel) error {
+	return s.channelRepo.CreateChannel(channel)
+}
+
 func NewChannelService(dbcon *client.PostgresClient) *ChannelService {
 	return &ChannelService{
 		channelRepo: repositories.NewChannelRepo(dbcon),

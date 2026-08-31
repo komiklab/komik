@@ -50,6 +50,82 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
 
+export type postChannelChannelIdSendResponse201 = {
+  data: void
+  status: 201
+}
+
+export type postChannelChannelIdSendResponseSuccess = (postChannelChannelIdSendResponse201) & {
+  headers: Headers;
+};
+;
+
+export type postChannelChannelIdSendResponse = (postChannelChannelIdSendResponseSuccess)
+
+export const getPostChannelChannelIdSendUrl = (channelId: string,) => {
+
+
+
+
+  return `http://localhost:65080/api/v1/channel/${channelId}/send`
+}
+
+export const postChannelChannelIdSend = async (channelId: string, options?: RequestInit): Promise<postChannelChannelIdSendResponse> => {
+
+  return customInstance<postChannelChannelIdSendResponse>(getPostChannelChannelIdSendUrl(channelId),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getPostChannelChannelIdSendMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postChannelChannelIdSend>>, TError,{channelId: string}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof postChannelChannelIdSend>>, TError,{channelId: string}, TContext> => {
+
+const mutationKey = ['postChannelChannelIdSend'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postChannelChannelIdSend>>, {channelId: string}> = (props) => {
+          const {channelId} = props ?? {};
+
+          return  postChannelChannelIdSend(channelId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostChannelChannelIdSendMutationResult = NonNullable<Awaited<ReturnType<typeof postChannelChannelIdSend>>>
+
+    export type PostChannelChannelIdSendMutationError = unknown
+
+    export const usePostChannelChannelIdSend = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postChannelChannelIdSend>>, TError,{channelId: string}, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postChannelChannelIdSend>>,
+        TError,
+        {channelId: string},
+        TContext
+      > => {
+      return useMutation(getPostChannelChannelIdSendMutationOptions(options), queryClient);
+    }
+
 export type getChannelResponse200 = {
   data: ChannelGetResponse
   status: 200

@@ -54,6 +54,8 @@ func (h *HttpComponent) Init() {
 			"GetAgent":       {h.AuthMiddleware(sessionAuth)},
 			"PostAgent":      {h.AuthMiddleware(sessionAuth)},
 			"GetAgentId":     {h.AuthMiddleware(sessionAuth)},
+			"GetChannel":     {h.AuthMiddleware(sessionAuth)},
+			"PostChannel":    {h.AuthMiddleware(sessionAuth)},
 		},
 	})
 	h.e.GET("/internal/api/v1/agent", handler.InternalGetAgents)

@@ -23,7 +23,7 @@ import HooksPanel from "../components/layout/hooks/hookspanel";
 import { InboxPanel } from "../components/layout/inbox/InboxPanel";
 import { useUiStore, type WorkspaceSection } from "../stores/ui";
 import { RouteGuard } from "../providers/RouteGuard";
-import ChannelPanel from "../components/channels/channelpanel";
+import ChannelsPanel from "../components/layout/channels/channelspanel";
 
 const navItems: Array<{
   value: WorkspaceSection;
@@ -127,7 +127,7 @@ export default function HomePage() {
         {currentSection === "inbox" && <InboxPanel />}
         {currentSection === "agent" && <AgentPanel />}
         {currentSection === "hooks" && <HooksPanel />}
-        {currentSection === "channels" && <ChannelPanel />}
+        {currentSection === "channels" && <ChannelsPanel />}
       </AppLayout>
     </RouteGuard>
   );

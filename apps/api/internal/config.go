@@ -17,6 +17,14 @@ type Config struct {
 	OauthConfig         OauthConfig
 	SlackIntegration    SlackIntegration
 	InngestConfig       InngestConfig
+	StorageConfig		 StorageConfig
+}
+
+type StorageConfig struct {
+	// StorageAccessKey string `valid:"required" env:"STORAGE_ACCESS_KEY" envDefault:""`
+	// StorageSecretKey string `valid:"required" env:"STORAGE_SECRET_KEY" envDefault:""`
+	StorageEndpoint  string `valid:"required" env:"STORAGE_ENDPOINT" envDefault:"localhost:9000"`
+	StorageBucket    string `valid:"required" env:"STORAGE_BUCKET" envDefault:"komik"`
 }
 
 type InngestConfig struct {

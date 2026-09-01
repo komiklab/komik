@@ -13,7 +13,6 @@ import (
 	"github.com/komiklab/komik/internal/repositories"
 	"github.com/komiklab/komik/internal/utils"
 	"github.com/rs/zerolog/log"
-	"gorm.io/datatypes"
 )
 
 type EntityService struct {
@@ -54,7 +53,7 @@ func (e *EntityService) InitiateEntity(ctx context.Context, sourceType, sourceRe
 		return errors.New("Not a valid sourceType: " + sourceType)
 	}
 	entity := &models.Entity{
-		Id:            datatypes.NewUUIDv4(),
+		Id:            uuid.New(),
 		Status:        EntityStateInitiated,
 		SourceType:    sourceType,
 		SourceRef:     sourceRef,

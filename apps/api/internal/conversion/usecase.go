@@ -4,10 +4,10 @@ import (
 	"context"
 
 	"github.com/komiklab/komik/internal/models"
-	"gorm.io/datatypes"
+	"github.com/google/uuid"
 )
 
-func FetchConversationBySessionId(ctx context.Context, srv *ConverstionSrv, sessionId datatypes.UUID) ([]*models.Conversation, error) {
+func FetchConversationBySessionId(ctx context.Context, srv *ConverstionSrv, sessionId uuid.UUID) ([]*models.Conversation, error) {
 	return srv.repo.GetConversationBySessionId(sessionId)
 }
 

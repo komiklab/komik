@@ -35,7 +35,6 @@ func main() {
 		models.AuditLog{},
 		models.UserRepresentation{},
 		models.Entity{},
-		models.EntityInterrupt{},
 		models.Agent{},
 		models.Hooks{},
 		models.Conversation{},

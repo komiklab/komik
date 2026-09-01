@@ -1,7 +1,9 @@
 package agent
 
 import (
+	"bufio"
 	"encoding/json"
+	"strings"
 
 	"github.com/komiklab/komik/apidefn"
 	"github.com/komiklab/komik/internal/client"
@@ -28,11 +30,36 @@ func (a *AgentService) CallAgent(agent models.Agent, entity models.Entity) ([]by
 		}
 	}
 	client := resty.New()
-	_, err := client.R().
+	res, err := client.R().
 		SetHeader("Content-Type", "application/json").
+		SetHeader("Accept", "text/event-stream, application/json").
 		SetBody(body).
+		SetResponseDoNotParse(true).
 		Post(url)
-	return  nil, err
+	if err != nil {
+		return nil, err
+	}
+	defer res.RawResponse.Body.Close()
+	contentType := res.Header().Get("Content-Type")
+	var events []json.RawMessage
+	if strings.Contains(contentType, "text/event-stream"){
+		scanner := bufio.NewScanner(res.RawResponse.Body)
+		for scanner.Scan() {
+			line := scanner.Text()
+			if strings.HasPrefix(line, "data:") {
+				data := strings.TrimSpace(line[5:])
+				if data == "" || data == "[DONE]" {
+					continue
+				}
+				events = append(events, json.RawMessage(data))
+			}
+		}
+		if err := scanner.Err(); err != nil {
+			return nil, err
+		}
+	}
+
+	return json.Marshal(events)
 }
 
 func (a *AgentService) CreateAgent(agentModel *models.Agent) (*apidefn.AgentCreateResponse, error) {
